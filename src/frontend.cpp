@@ -479,7 +479,7 @@ void frontend_decrypt(s8 *file_in, s8 *file_out)
 					{
 						if(_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE)
 						{
-							//TODO, fake security polocy profile
+							//TODO, fake security policy profile
 						}
 						else
 						{

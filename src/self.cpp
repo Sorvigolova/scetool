@@ -58,23 +58,30 @@ void _print_signed_elf_header(FILE *fp, signed_elf_header_t *h)
 		fprintf(fp, " ELF Section Headers Offset 0x%016llX\n", _ES64(h->shdr_offset));
 	else
 		fprintf(fp, " ELF Section Headers Offset N/A\n");
-	
-	fprintf(fp, " Segment Ext Header Offset  0x%016llX\n", _ES64(h->segment_ext_header_offset));
-	
+
+	if ((_ES64(h->segment_ext_header_offset)) != 0)
+		fprintf(fp, " Segment Ext Header Offset  0x%016llX\n", _ES64(h->segment_ext_header_offset));
+	else
+		fprintf(fp, " Segment Ext Header Offset  N/A\n");
+
 	if ((_ES64(h->section_ext_header_offset)) != 0)
 		fprintf(fp, " Section Ext Header Offset  0x%016llX\n", _ES64(h->section_ext_header_offset));
 	else
 		fprintf(fp, " Section Ext Header Offset  N/A\n");
 
-	if ((_ES64(h->supplemental_header_offset)) != 0)
+	//SELF v.3+ members
+	if (_ES64(h->version) > SELF_VERSION_2)
 	{
-		fprintf(fp, " Supplemental Header Offset 0x%016llX\n", _ES64(h->supplemental_header_offset));
-		fprintf(fp, " Supplemental Header Size   0x%016llX\n", _ES64(h->supplemental_header_size));
-	}
-	else
-	{
-		fprintf(fp, " Supplemental Header Offset N/A\n");
-		fprintf(fp, " Supplemental Header Size   N/A\n");
+		if ((_ES64(h->supplemental_header_offset)) != 0)
+		{
+			fprintf(fp, " Supplemental Header Offset 0x%016llX\n", _ES64(h->supplemental_header_offset));
+			fprintf(fp, " Supplemental Header Size   0x%016llX\n", _ES64(h->supplemental_header_size));
+		}
+		else
+		{
+			fprintf(fp, " Supplemental Header Offset N/A\n");
+			fprintf(fp, " Supplemental Header Size   N/A\n");
+		}
 	}
 	//fprintf(fp, " padding             0x%016llX\n", _ES64(h->padding));
 }
