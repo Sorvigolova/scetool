@@ -4,6 +4,7 @@
 * This file is released under the GPLv2.
 */
 #define _CRT_SECURE_NO_WARNINGS
+#define _CRT_NONSTDC_NO_DEPRECATE
 
 #include <stdlib.h>
 #include <string.h>
@@ -49,7 +50,7 @@ curve_t *_curves;
 /*! Loaded VSH curves. */
 vsh_curve_t *_vsh_curves;
 /*! Backup keyset. */
-keyset_t *_used_keyset;
+keyset_t *_used_keyset = NULL;
 
 static void _fill_property(keyset_t *ks, s8 *prop, s8 *value)
 {
@@ -387,7 +388,7 @@ static bool validate_keyset(sce_buffer_ctxt_t *ctxt, keyset_t *ks)
 	u64 sig_input_length;
 	u32 sig_algo, section_count;
 
-	memcpy(test_buf, ctxt->metai, 0x50);
+	memcpy(test_buf, ctxt->erh, 0x50);
 
 	memcpy(test_buf2, test_buf, 0x50);
 	nc_off = 0;
@@ -398,7 +399,7 @@ static bool validate_keyset(sce_buffer_ctxt_t *ctxt, keyset_t *ks)
 		
 	nc_off = 0;
 	memcpy (ctr_iv, (test_buf2 + 0x20) ,0x10);
-	aes_setkey_enc(&aes_ctxt, test_buf2, METADATA_INFO_KEYBITS);
+	aes_setkey_enc(&aes_ctxt, test_buf2, ENCRYPTION_ROOT_HEADER_KEYBITS);
 	aes_crypt_ctr(&aes_ctxt, 0x10, &nc_off, ctr_iv, sblk, (test_buf2 + 0x40), (test_buf2 + 0x40));
 
 	sig_input_length = _ES64(*(u64*)&test_buf2[0x40]);
@@ -415,7 +416,7 @@ static bool validate_keyset(sce_buffer_ctxt_t *ctxt, keyset_t *ks)
 
 	nc_off = 0;
 	memcpy (ctr_iv, (test_buf2 + 0x20) ,0x10);
-	aes_setkey_enc(&aes_ctxt, test_buf2, METADATA_INFO_KEYBITS);
+	aes_setkey_enc(&aes_ctxt, test_buf2, ENCRYPTION_ROOT_HEADER_KEYBITS);
 	aes_crypt_ctr(&aes_ctxt, 0x10, &nc_off, ctr_iv, sblk, (test_buf2 + 0x40), (test_buf2 + 0x40));
 
 	sig_input_length = _ES64(*(u64*)&test_buf2[0x40]);
@@ -657,16 +658,16 @@ keyset_t *keyset_find(sce_buffer_ctxt_t *ctxt)
 	switch(_ES16(ctxt->cfh->category))
 	{
 	case CF_CATEGORY_SELF:
-		res = _keyset_find_for_self(_ES32(ctxt->self.ai->program_type), _ES16(ctxt->cfh->key_revision), _ES64(ctxt->self.ai->version));
+		res = _keyset_find_for_self(_ES32(ctxt->self.ai->program_type), _ES16(ctxt->cfh->attribute), _ES64(ctxt->self.ai->version));
 		break;
 	case CF_CATEGORY_RVK:
-		res = _keyset_find_for_rvk(_ES16(ctxt->cfh->key_revision));
+		res = _keyset_find_for_rvk(_ES16(ctxt->cfh->attribute));
 		break;
 	case CF_CATEGORY_PKG:
-		res = _keyset_find_for_pkg(_ES16(ctxt->cfh->key_revision));
+		res = _keyset_find_for_pkg(_ES16(ctxt->cfh->attribute));
 		break;
 	case CF_CATEGORY_SPP:
-		res = _keyset_find_for_spp(_ES16(ctxt->cfh->key_revision));
+		res = _keyset_find_for_spp(_ES16(ctxt->cfh->attribute));
 		break;
 	}
 

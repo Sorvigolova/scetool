@@ -17,42 +17,17 @@
 /*! Header align. */
 #define HEADER_ALIGN 0x80
 
-/*! Cert file magic value ("SCE\0"). */
+/*! Certified file magic value ("SCE\0"). */
 #define CF_MAGIC 0x53434500
 
-/*! Cert file versions. */
-/*! Cert file version 2. */
+/*! Certified file versions. */
+/*! Certified file version 2. */
 #define CF_VERSION_2 2
 
-/*! Key revisions. */
-#define KEY_REVISION_0 0x00
-#define KEY_REVISION_092_330 0x01
-#define KEY_REVISION_1 0x02
-//#define KEY_REVISION_ 0x03
-#define KEY_REVISION_340_342 0x04
-//#define KEY_REVISION_ 0x05
-//#define KEY_REVISION_ 0x06
-#define KEY_REVISION_350 0x07
-//#define KEY_REVISION_ 0x08
-//#define KEY_REVISION_ 0x09
-#define KEY_REVISION_355 0x0a
-//#define KEY_REVISION_ 0x0b
-//#define KEY_REVISION_ 0x0c
-#define KEY_REVISION_356 0x0d
-//#define KEY_REVISION_ 0x0e
-//#define KEY_REVISION_ 0x0f
-#define KEY_REVISION_360_361 0x10
-//#define KEY_REVISION_ 0x11
-//#define KEY_REVISION_ 0x12
-#define KEY_REVISION_365 0x13
-//#define KEY_REVISION_ 0x14
-//#define KEY_REVISION_ 0x15
-#define KEY_REVISION_370_373 0x16
-//#define KEY_REVISION_ 0x17
-//#define KEY_REVISION_ 0x18
-#define KEY_REVISION_DEBUG 0x8000
+/*! Certified File Attributes. */
+#define ATTRIBUTE_FAKE_CERTIFIED_FILE 0x8000
 
-/*! Cert file categories. */
+/*! Certified file categories. */
 /*! SELF file. */
 #define CF_CATEGORY_SELF 1
 /*! RVK file. */
@@ -63,18 +38,22 @@
 #define CF_CATEGORY_SPP 4
 
 /*! Sub header types. */
+
+/*!  header types. */
 /*! SCE version header. */
 #define SUB_HEADER_TYPE_SCEVERSION 1
-/*! SELF header. */
-#define SUB_HEADER_TYPE_SELF 3
 
-/*! Control info types. */
-/*! Control flags. */
-#define CONTROL_INFO_TYPE_FLAGS 1
-/*! Digest. */
-#define CONTROL_INFO_TYPE_DIGEST 2
-/*! NPDRM block. */
-#define CONTROL_INFO_TYPE_NPDRM 3
+/*! SELF versions. */
+#define SELF_VERSION_2 2
+#define SELF_VERSION_3 3
+
+/*! Supplemental header types. */
+/*! SELF control flags. */
+#define SPPL_HEADER_TYPE_SELF_CONTROL_FLAGS 1
+/*! ELF digest header. */
+#define SPPL_HEADER_TYPE_ELF_DIGEST_HEADER 2
+/*! NPDRM header. */
+#define SPPL_HEADER_TYPE_NPDRM_HEADER 3
 
 /*! Optional header types. */
 /*! Capability flags header. */
@@ -84,12 +63,12 @@
 /*! Control flags header 4. */
 #define OPT_HEADER_TYPE_CONTROL_FLAGS 4
 
-/*! Metadata key/iv lengths. */
-#define METADATA_INFO_KEYBITS 128
-#define METADATA_INFO_KEY_LEN 16
-#define METADATA_INFO_KEYPAD_LEN 16
-#define METADATA_INFO_IV_LEN 16
-#define METADATA_INFO_IVPAD_LEN 16
+/*! Encryption root header key/iv lengths. */
+#define ENCRYPTION_ROOT_HEADER_KEYBITS 128
+#define ENCRYPTION_ROOT_HEADER_KEY_LEN 16
+#define ENCRYPTION_ROOT_HEADER_KEYPAD_LEN 16
+#define ENCRYPTION_ROOT_HEADER_IV_LEN 16
+#define ENCRYPTION_ROOT_HEADER_IVPAD_LEN 16
 
 /*! Metadata section types. */
 /*! Segment header. */
@@ -99,16 +78,22 @@
 /*! Sceversion section. */
 #define METADATA_SECTION_TYPE_SCEV 3
 
-/*! Section is hashed. */
-#define METADATA_SECTION_HASHED 2
+/*! Segment certification header hash algorithms. */
+/*! Sha1-hmac. */
+#define SEGMENT_HASH_ALGORITHM_HMAC_SHA1 2
+/*! Sha1. */
+#define SEGMENT_HASH_ALGORITHM_SHA1 3
+
 /*! Section is not encrypted. */
 #define METADATA_SECTION_NOT_ENCRYPTED 1
 /*! Section is encrypted. */
 #define METADATA_SECTION_ENCRYPTED 3
-/*! Section is not compressed. */
-#define METADATA_SECTION_NOT_COMPRESSED 1
-/*! Section is compressed. */
-#define METADATA_SECTION_COMPRESSED 2
+
+/*! Segment certification header compression algorithms. */
+/*! Plain-text. */
+#define SEGMENT_COMP_ALGORITHM_PLAIN 1
+/*! Zlib. */
+#define SEGMENT_COMP_ALGORITHM_ZLIB 2
 
 /*! Signature types. */
 #define SIGNATURE_ALGORITHM_ECDSA 1
@@ -170,7 +155,7 @@ typedef struct _cert_file_header
 	/*! Header version .*/
 	u32 version;
 	/*! Key revision. */
-	u16 key_revision;
+	u16 attribute;
 	/*! File category. */
 	u16 category;
 	/*! Extended header size. */
@@ -182,44 +167,44 @@ typedef struct _cert_file_header
 } cert_file_header_t;
 
 /*! SELF header. */
-typedef struct _self_header
+typedef struct _signed_elf_header
 {
-	/*! Header type. */
-	u64 header_type;
-	/*! Program info offset. */
-	u64 app_info_offset;
-	/*! ELF offset. */
-	u64 elf_offset;
+	/*! SELF version. */
+	u64 version;
+	/*! Program identification header offset. */
+	u64 program_identification_header_offset;
+	/*! ELF header offset. */
+	u64 elf_header_offset;
 	/*! Program headers offset. */
 	u64 phdr_offset;
 	/*! Section headers offset. */
 	u64 shdr_offset;
-	/*! Segment info offset. */
-	u64 segment_info_offset;
-	/*! SCE version offset. */
-	u64 sce_version_offset;
-	/*! Control info offset. */
-	u64 control_info_offset;
-	/*! Control info size. */
-	u64 control_info_size;
+	/*! Segment ext header offset. */
+	u64 segment_ext_header_offset;
+	/*! Section ext header offset. */
+	u64 section_ext_header_offset;
+	/*! Supplemental header offset. */
+	u64 supplemental_header_offset;
+	/*! Supplemental header size. */
+	u64 supplemental_header_size;
 	/*! Padding. */
 	u64 padding;
-} self_header_t;
+} signed_elf_header_t;
 
 /*! Metadata info. */
-typedef struct _metadata_info
+typedef struct _encryption_root_header
 {
 	/*! Key. */
-	u8 key[METADATA_INFO_KEY_LEN];
+	u8 key[ENCRYPTION_ROOT_HEADER_KEY_LEN];
 	/*! Key padding. */
-	u8 key_pad[METADATA_INFO_KEYPAD_LEN];
+	u8 key_pad[ENCRYPTION_ROOT_HEADER_KEYPAD_LEN];
 	/*! IV. */
-	u8 iv[METADATA_INFO_IV_LEN];
+	u8 iv[ENCRYPTION_ROOT_HEADER_IV_LEN];
 	/*! IV padding. */
-	u8 iv_pad[METADATA_INFO_IVPAD_LEN];
-} metadata_info_t;
+	u8 iv_pad[ENCRYPTION_ROOT_HEADER_IVPAD_LEN];
+} encryption_root_header_t;
 
-typedef struct _metadata_header
+typedef struct _certification_header
 {
 	/*! Signature input length. */
 	u64 sig_input_length;
@@ -233,7 +218,7 @@ typedef struct _metadata_header
 	u32 opt_header_size;
 	u32 unknown_1;
 	u32 unknown_2;
-} metadata_header_t;
+} certification_header_t;
 
 /*! Metadata section header. */
 typedef struct _metadata_section_header
@@ -506,7 +491,7 @@ typedef struct _sce_buffer_ctxt
 		struct
 		{
 			/*! SELF header. */
-			self_header_t *selfh;
+			signed_elf_header_t *selfh;
 			/*! Program info. */
 			app_info_t *ai;
 			/*! Section info. */
@@ -519,10 +504,10 @@ typedef struct _sce_buffer_ctxt
 			list_t *ohs;
 		} self;
 	};
-	/*! Metadata info. */
-	metadata_info_t *metai;
+	/*! Encryption root header. */
+	encryption_root_header_t *erh;
 	/*! Metadata header. */
-	metadata_header_t *metah;
+	certification_header_t *metah;
 	/*! Metadata section headers. */
 	metadata_section_header_t *metash;
 	/*! SCE file keys. */
@@ -560,8 +545,8 @@ typedef struct _sce_buffer_ctxt
 			u32 off_ohs;
 		} off_self;
 	};
-	/*! Metadata info offset. */
-	u32 off_metai;
+	/*! Encryption root header offset. */
+	u32 off_erh;
 	/*! Metadata header offset. */
 	u32 off_metah;
 	/*! Metadata section headers offset. */
@@ -608,6 +593,9 @@ bool sce_encrypt_ctxt(sce_buffer_ctxt_t *ctxt, u8 *keyset);
 /*! Write context to file. */
 bool sce_write_ctxt(sce_buffer_ctxt_t *ctxt, s8 *fname);
 
+/*! Is certification header encrypted? */
+bool is_cert_header_encrypted(sce_buffer_ctxt_t *ctxt);
+
 /*! Decrypt header (use passed metadata_into if not NULL). */
 bool sce_decrypt_header(sce_buffer_ctxt_t *ctxt, u8 *metadata_info, u8 *keyset);
 
@@ -617,8 +605,11 @@ bool sce_decrypt_data(sce_buffer_ctxt_t *ctxt);
 /*! Print SCE header info. */
 void cf_print_info(FILE *fp, sce_buffer_ctxt_t *ctxt);
 
-/*! Print SCE file info. */
-void sce_print_info(FILE *fp, sce_buffer_ctxt_t *ctxt, u8 *keyset);
+/*! Print SCE extended header info. */
+void cf_ext_print_info(FILE *fp, sce_buffer_ctxt_t *ctxt);
+
+/*! Print SCE encrypted header info. */
+void sce_print_encrypted_info(FILE *fp, sce_buffer_ctxt_t *ctxt, u8 *keyset);
 
 /*! Print SCE signature status. */
 void print_sce_signature_info(FILE *fp, sce_buffer_ctxt_t *ctxt, u8 *keyset);
@@ -631,6 +622,9 @@ u64 sce_str_to_version(s8 *version);
 
 /*! Convert hex version to dec version. */
 u64 sce_hexver_to_decver(u64 version);
+
+/*! Convert dec version to hex version. */
+u64 sce_decver_to_hexver(u64 version);
 
 /*! Get control info. */
 control_info_t *sce_get_ctrl_info(sce_buffer_ctxt_t *ctxt, u32 type);

@@ -61,10 +61,13 @@ typedef struct _self_config
 bool self_print_info(FILE *fp, sce_buffer_ctxt_t *ctxt);
 
 /*! Print SELF encrypted info. */
-bool self_print_encrypted_info(FILE *fp, sce_buffer_ctxt_t *ctxt);
+bool self_print_optional_info(FILE *fp, sce_buffer_ctxt_t *ctxt);
 
 /*! Create ELF from SELF. */
 bool self_write_to_elf(sce_buffer_ctxt_t *ctxt, const s8 *elf_out);
+
+/*! Create ELF from FSELF. */
+bool fself_write_to_elf(sce_buffer_ctxt_t *ctxt, const s8 *elf_out);
 
 /*! Create SELF from ELF. */
 bool self_build_self(sce_buffer_ctxt_t *ctxt, self_config_t *sconf);

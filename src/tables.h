@@ -51,9 +51,6 @@ extern id_to_name_t _msh_types[];
 /*! Key types. */
 extern id_to_name_t _key_categories[];
 
-/*! Key revisions. */
-//extern const s8 *_key_revisions[];
-
 /*! Cert file types. */
 extern id_to_name_t _cert_file_categories[];
 

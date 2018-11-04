@@ -31,7 +31,7 @@ static ci_data_npdrm_t *_sce_find_ci_npdrm(sce_buffer_ctxt_t *ctxt)
 		{
 			control_info_t *ci = (control_info_t *)iter->value;
 
-			if(_ES32(ci->type) == CONTROL_INFO_TYPE_NPDRM)
+			if(_ES32(ci->type) == SPPL_HEADER_TYPE_NPDRM_HEADER)
 			{
 				ci_data_npdrm_t *np = (ci_data_npdrm_t *)((u8 *)ci + sizeof(control_info_t));
 				return np;
@@ -100,12 +100,12 @@ bool np_decrypt_npdrm(sce_buffer_ctxt_t *ctxt)
 		_hexdump(stdout, "[*] Klicensee:", 0, npdrm_key, sizeof(npdrm_key), FALSE);
 	}
 
-	aes_setkey_dec(&aes_ctxt, ks_klic_key->erk, METADATA_INFO_KEYBITS);
+	aes_setkey_dec(&aes_ctxt, ks_klic_key->erk, ENCRYPTION_ROOT_HEADER_KEYBITS);
 	aes_crypt_ecb(&aes_ctxt, AES_DECRYPT, npdrm_key, npdrm_key);
 
 	memset(npdrm_iv, 0, 0x10);
-	aes_setkey_dec(&aes_ctxt, npdrm_key, METADATA_INFO_KEYBITS);
-	aes_crypt_cbc(&aes_ctxt, AES_DECRYPT, sizeof(metadata_info_t), npdrm_iv, (u8 *)ctxt->metai, (u8 *)ctxt->metai);
+	aes_setkey_dec(&aes_ctxt, npdrm_key, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_crypt_cbc(&aes_ctxt, AES_DECRYPT, sizeof(encryption_root_header_t), npdrm_iv, (u8 *)ctxt->erh, (u8 *)ctxt->erh);
 
 	return TRUE;
 }
@@ -142,12 +142,12 @@ bool np_encrypt_npdrm(sce_buffer_ctxt_t *ctxt)
 	else
 		return FALSE;
 
-	aes_setkey_dec(&aes_ctxt, ks_klic_key->erk, METADATA_INFO_KEYBITS);
+	aes_setkey_dec(&aes_ctxt, ks_klic_key->erk, ENCRYPTION_ROOT_HEADER_KEYBITS);
 	aes_crypt_ecb(&aes_ctxt, AES_DECRYPT, npdrm_key, npdrm_key);
 
 	memset(npdrm_iv, 0, 0x10);
-	aes_setkey_enc(&aes_ctxt, npdrm_key, METADATA_INFO_KEYBITS);
-	aes_crypt_cbc(&aes_ctxt, AES_ENCRYPT, sizeof(metadata_info_t), npdrm_iv, ctxt->scebuffer + ctxt->off_metai, ctxt->scebuffer + ctxt->off_metai);
+	aes_setkey_enc(&aes_ctxt, npdrm_key, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_crypt_cbc(&aes_ctxt, AES_ENCRYPT, sizeof(encryption_root_header_t), npdrm_iv, ctxt->scebuffer + ctxt->off_erh, ctxt->scebuffer + ctxt->off_erh);
 
 	return TRUE;
 }

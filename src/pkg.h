@@ -9,4 +9,7 @@
 #include "types.h"
 #include "sce.h"
 
+/*! Print PKG infos. */
+void pkg_print(FILE *fp, sce_buffer_ctxt_t *ctxt);
+
 #endif

@@ -39,12 +39,12 @@ id_to_name_t _program_types_params[] =
 	{0, NULL}
 };
 
-/* Control info types. */
+/* Supplemental header types. */
 id_to_name_t _control_info_types[] = 
 {
-	{CONTROL_INFO_TYPE_FLAGS, "Flags"},
-	{CONTROL_INFO_TYPE_DIGEST, "Digest"},
-	{CONTROL_INFO_TYPE_NPDRM, "NPDRM"},
+	{SPPL_HEADER_TYPE_SELF_CONTROL_FLAGS, "SELF Control Flags"},
+	{SPPL_HEADER_TYPE_ELF_DIGEST_HEADER, "ELF Digest Header"},
+	{SPPL_HEADER_TYPE_NPDRM_HEADER, "NPDRM Header"},
 	{0, NULL}
 };
 
@@ -240,45 +240,6 @@ id_to_name_t _key_categories[] =
 	{KEYCATEGORY_OTHER, "OTHER"},
 	{0, NULL}
 };
-
-/*! Key revisions. */
-/*
-const s8 *_key_revisions[] = 
-{
-	"Revision 0", 
-	"0.92 - 3.30", 
-	"NP 0x02", 
-	"NP 0x03", 
-	"3.40 - 3.42", 
-	"NP 0x05", 
-	"NP 0x06", 
-	"3.50", 
-	"NP 0x08", 
-	"NP 0x09", 
-	"3.55", 
-	"NP 0x0b", 
-	"NP 0x0c", 
-	"3.56", 
-	"NP 0x0e", 
-	"NP 0x0f", 
-	"3.60 - 3.61", 
-	"NP 0x11", 
-	"NP 0x12", 
-	"3.65", 
-	"NP 0x14", 
-	"NP 0x15", 
-	"3.70 - 3.73", 
-	"NP 0x17", 
-	"NP 0x18", 
-	"0x19",
-	"0x1A",
-	"0x1B",
-	"0x1C",
-	"0x1D",
-	"0x1E",
-	"0x1F"
-};
-*/
 
 /*! Cert file types. */
 id_to_name_t _cert_file_categories[] = 

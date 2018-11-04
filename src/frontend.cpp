@@ -18,6 +18,7 @@
 #include "np.h"
 #include "rvk.h"
 #include "spp.h"
+#include "pkg.h"
 #include "util.h"
 #include "tables.h"
 
@@ -73,24 +74,24 @@ static bool _fill_self_config_template(s8 *file, self_config_t *sconf)
 				_LOG_VERBOSE("Template header decrypted.\n");
 
 				_LOG_VERBOSE("Using:\n");
-				sconf->key_revision = _ES16(ctxt->cfh->key_revision);
+				sconf->key_revision = _ES16(ctxt->cfh->attribute);
 				_IF_VERBOSE(printf(" Key Revision 0x%04X\n", sconf->key_revision));
 				sconf->auth_id = _ES64(ctxt->self.ai->auth_id);
 				_IF_VERBOSE(printf(" Auth-ID      0x%016llX\n", sconf->auth_id));
 				sconf->vendor_id = _ES32(ctxt->self.ai->vendor_id);
 				_IF_VERBOSE(printf(" Vendor-ID    0x%08X\n", sconf->vendor_id));
 				sconf->program_type = _ES32(ctxt->self.ai->program_type);
-				_IF_VERBOSE(printf(" Program-Type    0x%08X\n", sconf->program_type));
+				_IF_VERBOSE(printf(" Program-Type 0x%08X\n", sconf->program_type));
 				sconf->app_version = _ES64(ctxt->self.ai->version);
 				_IF_VERBOSE(printf(" APP-Version  0x%016llX\n", sconf->app_version));
 
-				control_info_t *ci = sce_get_ctrl_info(ctxt, CONTROL_INFO_TYPE_DIGEST);
+				control_info_t *ci = sce_get_ctrl_info(ctxt, SPPL_HEADER_TYPE_ELF_DIGEST_HEADER);
 				ci_data_digest_40_t *cid = (ci_data_digest_40_t *)((u8 *)ci + sizeof(control_info_t));
 				_es_ci_data_digest_40(cid);
-				sconf->fw_version = cid->fw_version;
+				sconf->fw_version = sce_decver_to_hexver(cid->fw_version);
 				_IF_VERBOSE(printf(" FW Version   0x%016llX\n", sconf->fw_version));
 
-				ci = sce_get_ctrl_info(ctxt, CONTROL_INFO_TYPE_FLAGS);
+				ci = sce_get_ctrl_info(ctxt, SPPL_HEADER_TYPE_SELF_CONTROL_FLAGS);
 				sconf->ctrl_flags = (u8 *)_memdup(((u8 *)ci) + sizeof(control_info_t), 0x20);
 				_IF_VERBOSE(_hexdump(stdout, " Control Flags   ", 0, sconf->ctrl_flags, 0x20, 0));
 
@@ -319,31 +320,45 @@ void frontend_print_infos(s8 *file)
 				keyset = _x_to_u8_buffer(_keyset);
 			}
 
-			if(sce_decrypt_header(ctxt, meta_info, keyset))
-			{
-				_LOG_VERBOSE("Header decrypted.\n");
-				if(sce_decrypt_data(ctxt))
-					_LOG_VERBOSE("Data decrypted.\n");
-				else
-					printf("[*] Warning: Could not decrypt data.\n");
-			}
-			else
-				printf("[*] Warning: Could not decrypt header.\n");
+			//Checking for unencrypted header.
+			bool is_header_unencrypted = is_cert_header_encrypted(ctxt);
+			if(is_header_unencrypted == TRUE)
+				printf("[*] Unencrypted certified file detected.\n");
 
+			if(_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE)
+				printf("[*] Fake certified file detected.\n");
+			else
+			{
+				if(is_header_unencrypted == FALSE)
+				{
+					if(sce_decrypt_header(ctxt, meta_info, keyset))
+					{
+						_LOG_VERBOSE("Header decrypted.\n");
+						if(sce_decrypt_data(ctxt))
+							_LOG_VERBOSE("Data decrypted.\n");
+						else
+							printf("[*] Warning: Could not decrypt data.\n");
+					}
+					else
+						printf("[*] Warning: Could not decrypt header.\n");
+				}
+			}
+            // Print CF Header
 			cf_print_info(stdout, ctxt);
-			//sce_print_info(stdout, ctxt, keyset);
-			if(_ES16(ctxt->cfh->category) == CF_CATEGORY_SELF)
-				self_print_info(stdout, ctxt);
-			else if(_ES16(ctxt->cfh->category) == CF_CATEGORY_RVK && ctxt->mdec == TRUE)
+
+			//Print Extended Header
+			cf_ext_print_info(stdout, ctxt);
+
+			//Print Encrypted Header
+			sce_print_encrypted_info(stdout, ctxt, keyset);
+
+			//Print File Info
+			if(_ES16(ctxt->cfh->category) == CF_CATEGORY_RVK && ctxt->mdec == TRUE)
 				rvk_print(stdout, ctxt);
 			else if(_ES16(ctxt->cfh->category) == CF_CATEGORY_SPP && ctxt->mdec == TRUE)
 				spp_print(stdout, ctxt);
-			
-			sce_print_info(stdout, ctxt, keyset);
-			if(_ES16(ctxt->cfh->category) == CF_CATEGORY_SELF)
-				self_print_encrypted_info(stdout, ctxt);
-			if(ctxt->mdec == TRUE)
-				print_sce_signature_info(stdout, ctxt, keyset);
+			else if(_ES16(ctxt->cfh->category) == CF_CATEGORY_PKG && ctxt->mdec == TRUE)
+				pkg_print(stdout, ctxt);
 			
 			free(ctxt);
 		}
@@ -357,6 +372,7 @@ void frontend_print_infos(s8 *file)
 
 void frontend_decrypt(s8 *file_in, s8 *file_out)
 {
+	bool is_header_decrypted = FALSE, is_data_decrypted = FALSE, is_cert_file_unencrypted = FALSE;
 	u8 *buf = _read_buffer(file_in, NULL);
 	if(buf != NULL)
 	{
@@ -385,29 +401,73 @@ void frontend_decrypt(s8 *file_in, s8 *file_out)
 				keyset = _x_to_u8_buffer(_keyset);
 			}
 
-			if(sce_decrypt_header(ctxt, meta_info, keyset))
+			//Checking for unencrypted header.
+			
+			is_cert_file_unencrypted = is_cert_header_encrypted(ctxt);
+			if(is_cert_file_unencrypted == TRUE)
+				printf("[*] Unencrypted certified file detected.\n");
+			
+			//Decrypt header.
+			if((_ES16(ctxt->cfh->attribute) != ATTRIBUTE_FAKE_CERTIFIED_FILE) && (is_cert_file_unencrypted == FALSE))
+				is_header_decrypted = sce_decrypt_header(ctxt, meta_info, keyset);
+
+			if ((_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE) || is_header_decrypted || is_cert_file_unencrypted)
 			{
-				_LOG_VERBOSE("Header decrypted.\n");
-				if(sce_decrypt_data(ctxt))
+				if((_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE) || is_cert_file_unencrypted)
+					_LOG_VERBOSE("Header is not encrypted.\n");
+				else
+					_LOG_VERBOSE("Header decrypted.\n");
+				
+				//Decrypt data.
+				if((_ES16(ctxt->cfh->attribute) != ATTRIBUTE_FAKE_CERTIFIED_FILE) && (is_cert_file_unencrypted == FALSE))
+					is_data_decrypted = sce_decrypt_data(ctxt);
+				
+				if ((_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE) || is_data_decrypted || is_cert_file_unencrypted)
 				{
-					_LOG_VERBOSE("Data decrypted.\n");
+					if((_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE) || is_cert_file_unencrypted)
+						_LOG_VERBOSE("Data is not encrypted.\n");
+					else
+						_LOG_VERBOSE("Data decrypted.\n");
+					
 					if(_ES16(ctxt->cfh->category) == CF_CATEGORY_SELF)
 					{
-						if(self_write_to_elf(ctxt, file_out) == TRUE)
-							printf("[*] ELF written to %s.\n", file_out);
+						if(_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE)
+						{
+							if(fself_write_to_elf(ctxt, file_out) == TRUE)
+								printf("[*] ELF written to %s.\n", file_out);
+							else
+								printf("[*] Error: Could not write ELF.\n");
+						}
 						else
-							printf("[*] Error: Could not write ELF.\n");
+						{
+							if(self_write_to_elf(ctxt, file_out) == TRUE)
+								printf("[*] ELF written to %s.\n", file_out);
+							else
+								printf("[*] Error: Could not write ELF.\n");
+						}
 					}
 					else if(_ES16(ctxt->cfh->category) == CF_CATEGORY_RVK)
 					{
-						if(_write_buffer(file_out, ctxt->scebuffer + _ES64(ctxt->metash[0].data_offset), 
-							_ES64(ctxt->metash[0].data_size) + _ES64(ctxt->metash[1].data_size)))
-							printf("[*] RVK written to %s.\n", file_out);
+						if(_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE)
+						{
+							//TODO, fake revoke list
+						}
 						else
-							printf("[*] Error: Could not write RVK.\n");
+						{
+							if(_write_buffer(file_out, ctxt->scebuffer + _ES64(ctxt->metash[0].data_offset), 
+								(size_t)(_ES64(ctxt->metash[0].data_size) + _ES64(ctxt->metash[1].data_size))))
+								printf("[*] RVK written to %s.\n", file_out);
+							else
+								printf("[*] Error: Could not write RVK.\n");
+						}
 					}
 					else if(_ES16(ctxt->cfh->category) == CF_CATEGORY_PKG)
 					{
+						if(_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE)
+						{
+							//TODO, fake update package
+						}
+						else
 						/*if(_write_buffer(file_out, ctxt->scebuffer + _ES64(ctxt->metash[0].data_offset), 
 							_ES64(ctxt->metash[0].data_size) + _ES64(ctxt->metash[1].data_size) + _ES64(ctxt->metash[2].data_size)))
 							printf("[*] PKG written to %s.\n", file_out);
@@ -417,11 +477,18 @@ void frontend_decrypt(s8 *file_in, s8 *file_out)
 					}
 					else if(_ES16(ctxt->cfh->category) == CF_CATEGORY_SPP)
 					{
-						if(_write_buffer(file_out, ctxt->scebuffer + _ES64(ctxt->metash[0].data_offset), 
-							_ES64(ctxt->metash[0].data_size) + _ES64(ctxt->metash[1].data_size)))
-							printf("[*] SPP written to %s.\n", file_out);
+						if(_ES16(ctxt->cfh->attribute) == ATTRIBUTE_FAKE_CERTIFIED_FILE)
+						{
+							//TODO, fake security polocy profile
+						}
 						else
-							printf("[*] Error: Could not write SPP.\n");
+						{
+							if(_write_buffer(file_out, ctxt->scebuffer + _ES64(ctxt->metash[0].data_offset), 
+								(size_t)(_ES64(ctxt->metash[0].data_size) + _ES64(ctxt->metash[1].data_size))))
+								printf("[*] SPP written to %s.\n", file_out);
+							else
+								printf("[*] Error: Could not write SPP.\n");
+						}
 					}
 				}
 				else
