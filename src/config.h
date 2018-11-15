@@ -7,7 +7,7 @@
 #define _CONFIG_H_
 
 /*! scetool version. */
-#define SCETOOL_VERSION "0.3.2 beta 2"
+#define SCETOOL_VERSION "0.3.2 beta 3"
 
 #if 0
 /*! scetool API. */

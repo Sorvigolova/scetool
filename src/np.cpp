@@ -29,11 +29,11 @@ static ci_data_npdrm_t *_sce_find_ci_npdrm(sce_buffer_ctxt_t *ctxt)
 	{
 		LIST_FOREACH(iter, ctxt->self.cis)
 		{
-			control_info_t *ci = (control_info_t *)iter->value;
+			supplemental_header_t *ci = (supplemental_header_t *)iter->value;
 
 			if(_ES32(ci->type) == SPPL_HEADER_TYPE_NPDRM_HEADER)
 			{
-				ci_data_npdrm_t *np = (ci_data_npdrm_t *)((u8 *)ci + sizeof(control_info_t));
+				ci_data_npdrm_t *np = (ci_data_npdrm_t *)((u8 *)ci + sizeof(supplemental_header_t));
 				return np;
 			}
 		}
@@ -66,7 +66,7 @@ bool np_decrypt_npdrm(sce_buffer_ctxt_t *ctxt)
 		return FALSE;
 	if(_klicensee_key != NULL)
 		memcpy(npdrm_key, _klicensee_key, 0x10);
-	else if(_ES32(np->license_type) == NP_LICENSE_FREE)
+	else if(_ES32(np->license_type) == NP_DRM_TYPE_FREE)
 	{
 		ks_np_klic_free = keyset_find_by_name(CONFIG_NP_KLIC_FREE_KNAME);
 		ks_np_ci = keyset_find_by_name(CONFIG_NP_CI_KNAME);
@@ -87,7 +87,7 @@ bool np_decrypt_npdrm(sce_buffer_ctxt_t *ctxt)
 		else 
 			memcpy(npdrm_key, ks_np_klic_free->erk, 0x10);
 	}
-	else if(_ES32(np->license_type) == NP_LICENSE_LOCAL || _ES32(np->license_type) == NP_LICENSE_NETWORK )
+	else if(_ES32(np->license_type) == NP_DRM_TYPE_LOCAL || _ES32(np->license_type) == NP_DRM_TYPE_NETWORK )
 	{
 		if ((klicensee_by_content_id((s8 *)np->content_id, npdrm_key)) == FALSE)
 			return FALSE;
@@ -100,11 +100,11 @@ bool np_decrypt_npdrm(sce_buffer_ctxt_t *ctxt)
 		_hexdump(stdout, "[*] Klicensee:", 0, npdrm_key, sizeof(npdrm_key), FALSE);
 	}
 
-	aes_setkey_dec(&aes_ctxt, ks_klic_key->erk, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_setkey_dec(&aes_ctxt, ks_klic_key->erk, ENCRYPTION_ROOT_KEY_BITS);
 	aes_crypt_ecb(&aes_ctxt, AES_DECRYPT, npdrm_key, npdrm_key);
 
 	memset(npdrm_iv, 0, 0x10);
-	aes_setkey_dec(&aes_ctxt, npdrm_key, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_setkey_dec(&aes_ctxt, npdrm_key, ENCRYPTION_ROOT_KEY_BITS);
 	aes_crypt_cbc(&aes_ctxt, AES_DECRYPT, sizeof(encryption_root_header_t), npdrm_iv, (u8 *)ctxt->erh, (u8 *)ctxt->erh);
 
 	return TRUE;
@@ -127,14 +127,14 @@ bool np_encrypt_npdrm(sce_buffer_ctxt_t *ctxt)
 		return FALSE;
 	if(_klicensee_key != NULL)
 		memcpy(npdrm_key, _klicensee_key, 0x10);
-	else if(_ES32(np->license_type) == NP_LICENSE_FREE)
+	else if(_ES32(np->license_type) == NP_DRM_TYPE_FREE)
 	{
 		ks_np_klic_free = keyset_find_by_name(CONFIG_NP_KLIC_FREE_KNAME);
 		if(ks_np_klic_free == NULL)
 			return FALSE;
 		memcpy(npdrm_key, ks_np_klic_free->erk, 0x10);
 	}
-	else if(_ES32(np->license_type) == NP_LICENSE_LOCAL)
+	else if(_ES32(np->license_type) == NP_DRM_TYPE_LOCAL)
 	{
 		if ((klicensee_by_content_id((s8 *)np->content_id, npdrm_key)) == FALSE)
 			return FALSE;
@@ -142,11 +142,11 @@ bool np_encrypt_npdrm(sce_buffer_ctxt_t *ctxt)
 	else
 		return FALSE;
 
-	aes_setkey_dec(&aes_ctxt, ks_klic_key->erk, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_setkey_dec(&aes_ctxt, ks_klic_key->erk, ENCRYPTION_ROOT_KEY_BITS);
 	aes_crypt_ecb(&aes_ctxt, AES_DECRYPT, npdrm_key, npdrm_key);
 
 	memset(npdrm_iv, 0, 0x10);
-	aes_setkey_enc(&aes_ctxt, npdrm_key, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_setkey_enc(&aes_ctxt, npdrm_key, ENCRYPTION_ROOT_KEY_BITS);
 	aes_crypt_cbc(&aes_ctxt, AES_ENCRYPT, sizeof(encryption_root_header_t), npdrm_iv, ctxt->scebuffer + ctxt->off_erh, ctxt->scebuffer + ctxt->off_erh);
 
 	return TRUE;
@@ -168,14 +168,14 @@ bool np_create_ci(npdrm_config_t *npconf, ci_data_npdrm_t *cinp)
 	//Can only create NPDRM SELF with "local" and free license.
 	if(_klicensee_key != NULL)
 		memcpy(npdrm_key, _klicensee_key, 0x10);
-	else if(npconf->license_type == NP_LICENSE_FREE)
+	else if(npconf->license_type == NP_DRM_TYPE_FREE)
 	{
 		ks_np_klic_free = keyset_find_by_name(CONFIG_NP_KLIC_FREE_KNAME);
 		if(ks_np_klic_free == NULL)
 			return FALSE;
 		memcpy(npdrm_key, ks_np_klic_free->erk, 0x10);
 	}
-	else if(npconf->license_type == NP_LICENSE_LOCAL)
+	else if(npconf->license_type == NP_DRM_TYPE_LOCAL)
 	{
 		if ((klicensee_by_content_id((s8 *)npconf->content_id, npdrm_key)) == FALSE)
 			return FALSE;
@@ -183,7 +183,7 @@ bool np_create_ci(npdrm_config_t *npconf, ci_data_npdrm_t *cinp)
 	else
 		return FALSE;
 
-	cinp->magic = _ES32(NP_CI_MAGIC);
+	cinp->magic = _ES32(NP_HEADER_MAGIC);
 	cinp->version = _ES32(1);
 	cinp->license_type = _ES32(npconf->license_type);
 	cinp->app_type = _ES32(npconf->app_type);

@@ -56,10 +56,10 @@ void _print_cert_file_header(FILE *fp, cert_file_header_t *h)
 void _print_encryption_root_header(FILE *fp, encryption_root_header_t *erh)
 {
 	fprintf(fp, "[*] Encryption Root Header:\n");
-	_hexdump(fp, " Key", 0, erh->key, ENCRYPTION_ROOT_HEADER_KEY_LEN, FALSE);
-	_hexdump(fp, "    ", 0, erh->key_pad, ENCRYPTION_ROOT_HEADER_KEY_LEN, FALSE);
-	_hexdump(fp, " IV ", 0, erh->iv, ENCRYPTION_ROOT_HEADER_IV_LEN, FALSE);
-	_hexdump(fp, "    ", 0, erh->iv_pad, ENCRYPTION_ROOT_HEADER_IV_LEN, FALSE);
+	_hexdump(fp, " Key", 0, erh->key, ENCRYPTION_ROOT_KEY_LEN, FALSE);
+	_hexdump(fp, "    ", 0, erh->key_pad, ENCRYPTION_ROOT_KEY_LEN, FALSE);
+	_hexdump(fp, " IV ", 0, erh->iv, ENCRYPTION_ROOT_IV_LEN, FALSE);
+	_hexdump(fp, "    ", 0, erh->iv_pad, ENCRYPTION_ROOT_IV_LEN, FALSE);
 }
 
 void _print_certification_header(FILE *fp, certification_header_t *ch)
@@ -91,7 +91,7 @@ static void _print_segment_cert_header_header(FILE *fp)
 	fprintf(fp, " Idx Offset   Size     Type Index HashAlgorithm Hash Encrypted Key IV CompAlgorithm\n");
 }
 
-void _print_segment_cert_header(FILE *fp, metadata_section_header_t *msh, u32 idx)
+void _print_segment_cert_header(FILE *fp, segment_certification_header_t *msh, u32 idx)
 {
 	const s8 *name;
 	name = _get_name(_msh_types, _ES32(msh->type));
@@ -124,7 +124,7 @@ void _print_sce_file_keys(FILE *fp, sce_buffer_ctxt_t *ctxt)
 	u32 i;
 
 	//Get start of keys.
-	u8 *keys = (u8 *)ctxt->metash + sizeof(metadata_section_header_t) * _ES32(ctxt->metah->section_count);
+	u8 *keys = (u8 *)ctxt->metash + sizeof(segment_certification_header_t) * _ES32(ctxt->metah->section_count);
 
 	fprintf(fp, "[*] SCE File Keys:\n");
 	for(i = 0; i < _ES32(ctxt->metah->key_count); i++)
@@ -262,12 +262,12 @@ sce_buffer_ctxt_t *sce_create_ctxt_from_buffer(u8 *scebuffer)
 			res->self.selfh = (signed_elf_header_t *)(res->scebuffer + sizeof(cert_file_header_t));
 
 			//Program indentification header.
-			res->self.ai = (app_info_t *)(res->scebuffer + _ES64(res->self.selfh->program_identification_header_offset));
+			res->self.ai = (program_identification_header_t *)(res->scebuffer + _ES64(res->self.selfh->program_identification_header_offset));
 
 			//Segment ext header.
 			if (_ES64(res->self.selfh->segment_ext_header_offset) != NULL)
 			{
-				res->self.si = (segment_info_t *)(res->scebuffer + _ES64(res->self.selfh->segment_ext_header_offset));
+				res->self.si = (segment_ext_header_t *)(res->scebuffer + _ES64(res->self.selfh->segment_ext_header_offset));
 			}
 			else
 				res->self.si = 0;
@@ -291,7 +291,7 @@ sce_buffer_ctxt_t *sce_create_ctxt_from_buffer(u8 *scebuffer)
 
 					while(len > 0)
 					{
-						control_info_t *tci = (control_info_t *)ptr;
+						supplemental_header_t *tci = (supplemental_header_t *)ptr;
 						ptr += _ES32(tci->size);
 						len -= _ES32(tci->size);
 						list_add_back(res->self.cis, tci);
@@ -320,7 +320,7 @@ sce_buffer_ctxt_t *sce_create_ctxt_from_buffer(u8 *scebuffer)
 	//Set pointers to metadata headers.
 	res->erh = (encryption_root_header_t *)(scebuffer + sizeof(cert_file_header_t) + _ES32(res->cfh->ext_header_size));
 	res->metah = (certification_header_t *)((u8 *)res->erh + sizeof(encryption_root_header_t));
-	res->metash = (metadata_section_header_t *)((u8 *)res->metah + sizeof(certification_header_t));
+	res->metash = (segment_certification_header_t *)((u8 *)res->metah + sizeof(certification_header_t));
 
 	return res;
 }
@@ -340,10 +340,10 @@ sce_buffer_ctxt_t *sce_create_ctxt_build_self(u8 *elf, u32 elf_len)
 	res->self.selfh = (signed_elf_header_t *)malloc(sizeof(signed_elf_header_t));
 	memset(res->self.selfh, 0, sizeof(signed_elf_header_t));
 	res->self.selfh->version = _ES64(SELF_VERSION_3);
-	//Allocate program info.
-	res->self.ai = (app_info_t *)malloc(sizeof(app_info_t));
-	memset(res->self.ai, 0, sizeof(app_info_t));
-	//SCE version.
+	//Allocate program identification header.
+	res->self.ai = (program_identification_header_t *)malloc(sizeof(program_identification_header_t));
+	memset(res->self.ai, 0, sizeof(program_identification_header_t));
+	//Section ext header.
 	res->self.sv = (sce_version_t *)malloc(sizeof(sce_version_t));
 	//Create control info list.
 	res->self.cis = list_create();
@@ -435,7 +435,7 @@ static u32 _sce_get_ci_len(sce_buffer_ctxt_t *ctxt)
 	u32 res = 0;
 
 	LIST_FOREACH(iter, ctxt->self.cis)
-		res += _ES32(((control_info_t *)iter->value)->size);
+		res += _ES32(((supplemental_header_t *)iter->value)->size);
 
 	return res;
 }
@@ -583,13 +583,13 @@ void sce_layout_ctxt(sce_buffer_ctxt_t *ctxt)
 			//Signed ELF header.
 			ctxt->off_self.off_selfh = _INC_OFF_TYPE(coff, signed_elf_header_t);
 			//Program identification header.
-			ctxt->off_self.off_ai = _INC_OFF_TYPE(coff, app_info_t);
+			ctxt->off_self.off_ai = _INC_OFF_TYPE(coff, program_identification_header_t);
 			//ELF header.
 			ctxt->off_self.off_ehdr = _INC_OFF_SIZE(coff, ctxt->makeself->ehsize);
 			//ELF Program headers.
 			ctxt->off_self.off_phdr = _INC_OFF_SIZE(coff, ctxt->makeself->phsize);
 			//Segment ext header.
-			ctxt->off_self.off_si = _INC_OFF_SIZE(coff, sizeof(segment_info_t) * ctxt->makeself->si_cnt);
+			ctxt->off_self.off_si = _INC_OFF_SIZE(coff, sizeof(segment_ext_header_t) * ctxt->makeself->si_cnt);
 			//Section ext header.
 			ctxt->off_self.off_sv = _INC_OFF_TYPE(coff, sce_version_t);
 			//Supplemental header.
@@ -615,7 +615,7 @@ void sce_layout_ctxt(sce_buffer_ctxt_t *ctxt)
 	//Certification header.
 	ctxt->off_metah = _INC_OFF_TYPE(coff, certification_header_t);
 	//Segment certification headers.
-	ctxt->off_metash = _INC_OFF_SIZE(coff, _ES32(ctxt->metah->section_count) * sizeof(metadata_section_header_t));
+	ctxt->off_metash = _INC_OFF_SIZE(coff, _ES32(ctxt->metah->section_count) * sizeof(segment_certification_header_t));
 	//Keys.
 	_sce_fixup_keys(ctxt);
 	ctxt->off_keys = _INC_OFF_SIZE(coff, ctxt->keys_len);
@@ -660,30 +660,30 @@ static void _sce_build_header(sce_buffer_ctxt_t *ctxt)
 			//SELF header.
 			memcpy((signed_elf_header_t *)(ctxt->scebuffer + ctxt->off_self.off_selfh), ctxt->self.selfh, sizeof(signed_elf_header_t));
 			//Program info.
-			memcpy((app_info_t *)(ctxt->scebuffer + ctxt->off_self.off_ai), ctxt->self.ai, sizeof(app_info_t));
+			memcpy((program_identification_header_t *)(ctxt->scebuffer + ctxt->off_self.off_ai), ctxt->self.ai, sizeof(program_identification_header_t));
 			//ELF header.
 			memcpy(ctxt->scebuffer + ctxt->off_self.off_ehdr, ctxt->makeself->ehdr, ctxt->makeself->ehsize);
 			//ELF program headers.
 			memcpy(ctxt->scebuffer + ctxt->off_self.off_phdr, ctxt->makeself->phdrs, ctxt->makeself->phsize);
 
-			//Section info.
+			//Segment ext headers.
 			u32 i;
 			for(i = 0; i < ctxt->makeself->si_cnt; i++)
-				_copy_es_segment_info((segment_info_t *)(ctxt->scebuffer + ctxt->off_self.off_si + sizeof(segment_info_t) * i), &ctxt->self.si[i]);
+				_copy_es_segment_info((segment_ext_header_t *)(ctxt->scebuffer + ctxt->off_self.off_si + sizeof(segment_ext_header_t) * i), &ctxt->self.si[i]);
 
-			//SCE version.
+			//Section ext header.
 			memcpy((sce_version_t *)(ctxt->scebuffer + ctxt->off_self.off_sv), ctxt->self.sv, sizeof(sce_version_t));
 
-			//Control infos.
+			//Supplemental headers.
 			u32 ci_base = ctxt->off_self.off_cis;
 			LIST_FOREACH(iter, ctxt->self.cis)
 			{
-				control_info_t *ci = (control_info_t *)iter->value;
+				supplemental_header_t *ci = (supplemental_header_t *)iter->value;
 
-				//Copy control info header.
-				memcpy((control_info_t *)(ctxt->scebuffer + ci_base), ci, sizeof(control_info_t));
+				//Copy supplemental header.
+				memcpy((supplemental_header_t *)(ctxt->scebuffer + ci_base), ci, sizeof(supplemental_header_t));
 				//Copy data.
-				memcpy(ctxt->scebuffer + ci_base + sizeof(control_info_t), ((u8 *)ci) + sizeof(control_info_t), _ES32(ci->size) - sizeof(control_info_t));
+				memcpy(ctxt->scebuffer + ci_base + sizeof(supplemental_header_t), ((u8 *)ci) + sizeof(supplemental_header_t), _ES32(ci->size) - sizeof(supplemental_header_t));
 
 				ci_base += _ES32(ci->size);
 			}
@@ -709,7 +709,7 @@ static void _sce_build_header(sce_buffer_ctxt_t *ctxt)
 	memcpy((certification_header_t *)(ctxt->scebuffer + ctxt->off_metah), ctxt->metah, sizeof(certification_header_t));
 	//Segment certification headers.
 	for(i = 0; i < _ES32(ctxt->metah->section_count); i++)
-		memcpy((metadata_section_header_t *)(ctxt->scebuffer + ctxt->off_metash + sizeof(metadata_section_header_t) * i), &ctxt->metash[i], sizeof(metadata_section_header_t));
+		memcpy((segment_certification_header_t *)(ctxt->scebuffer + ctxt->off_metash + sizeof(segment_certification_header_t) * i), &ctxt->metash[i], sizeof(segment_certification_header_t));
 
 	//Keys.
 	//memcpy(ctxt->scebuffer + ctxt->off_keys, ctxt->keys, ctxt->keys_len);
@@ -805,7 +805,7 @@ static bool _sce_encrypt_header(sce_buffer_ctxt_t *ctxt, u8 *keyset)
 	//Encrypt encryption root header, segment certification headers and keys.
 	nc_off = 0;
 	ptr = ctxt->scebuffer + ctxt->off_metah;
-	aes_setkey_enc(&aes_ctxt, ctxt->erh->key, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_setkey_enc(&aes_ctxt, ctxt->erh->key, ENCRYPTION_ROOT_KEY_BITS);
 	memcpy(iv, ctxt->erh->iv, 0x10);
 	aes_crypt_ctr(&aes_ctxt, 
 		(size_t)(_ES64(ctxt->cfh->file_offset) - (sizeof(cert_file_header_t) + _ES32(ctxt->cfh->ext_header_size) + sizeof(encryption_root_header_t))), 
@@ -910,7 +910,7 @@ static bool check_for_old_algorithm(sce_buffer_ctxt_t *ctxt, keyset_t *ks)
 
 	nc_off = 0;
 	memcpy (ctr_iv, (test_buf2 + 0x20) ,0x10);
-	aes_setkey_enc(&aes_ctxt, test_buf2, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_setkey_enc(&aes_ctxt, test_buf2, ENCRYPTION_ROOT_KEY_BITS);
 	aes_crypt_ctr(&aes_ctxt, 0x10, &nc_off, ctr_iv, sblk, (test_buf2 + 0x40), (test_buf2 + 0x40));
 
 	sig_input_length = _ES64(*(u64*)&test_buf2[0x40]);
@@ -934,7 +934,7 @@ bool is_cert_header_encrypted(sce_buffer_ctxt_t *ctxt)
 		ctxt->mdec = TRUE;
 		
 		//Set start of SCE file keys.
-		ctxt->keys = (u8 *)ctxt->metash + sizeof(metadata_section_header_t) * _ES32(ctxt->metah->section_count);
+		ctxt->keys = (u8 *)ctxt->metash + sizeof(segment_certification_header_t) * _ES32(ctxt->metah->section_count);
 		ctxt->keys_len = _ES32(ctxt->metah->key_count) * 0x10;
 		
 		//Set SELF only headers.
@@ -1017,7 +1017,7 @@ bool sce_decrypt_header(sce_buffer_ctxt_t *ctxt, u8 *metadata_info, u8 *keyset)
 	//Decrypt certification header, segment certification headers and keys.
 	nc_off = 0;
 	memcpy (ctr_iv, ctxt->erh->iv ,0x10);
-	aes_setkey_enc(&aes_ctxt, ctxt->erh->key, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_setkey_enc(&aes_ctxt, ctxt->erh->key, ENCRYPTION_ROOT_KEY_BITS);
 	aes_crypt_ctr(&aes_ctxt, 
 		(size_t)(_ES64(ctxt->cfh->file_offset) - (sizeof(cert_file_header_t) + _ES32(ctxt->cfh->ext_header_size) + sizeof(encryption_root_header_t))), 
 		&nc_off, ctr_iv, sblk, (u8 *)ctxt->metah, (u8 *)ctxt->metah);
@@ -1030,7 +1030,7 @@ bool sce_decrypt_header(sce_buffer_ctxt_t *ctxt, u8 *metadata_info, u8 *keyset)
 	ctxt->mdec = TRUE;
 	
 	//Set start of SCE file keys.
-	ctxt->keys = (u8 *)ctxt->metash + sizeof(metadata_section_header_t) * _ES32(ctxt->metah->section_count);
+	ctxt->keys = (u8 *)ctxt->metash + sizeof(segment_certification_header_t) * _ES32(ctxt->metah->section_count);
 	ctxt->keys_len = _ES32(ctxt->metah->key_count) * 0x10;
 
 	//Set SELF only headers.
@@ -1255,11 +1255,11 @@ u64 sce_decver_to_hexver(u64 version)
 	return res;
 }
 
-control_info_t *sce_get_ctrl_info(sce_buffer_ctxt_t *ctxt, u32 type)
+supplemental_header_t *sce_get_supplemental_header(sce_buffer_ctxt_t *ctxt, u32 type)
 {
 	LIST_FOREACH(iter, ctxt->self.cis)
 	{
-		control_info_t *ci = (control_info_t *)iter->value;
+		supplemental_header_t *ci = (supplemental_header_t *)iter->value;
 		if(_ES32(ci->type) == type)
 			return ci;
 	}

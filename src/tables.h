@@ -15,8 +15,8 @@ extern id_to_name_t _program_types[];
 /*! SELF types as parameter. */
 extern id_to_name_t _program_types_params[];
 
-/* Control info types. */
-extern id_to_name_t _control_info_types[];
+/*! Supplemental header types. */
+extern id_to_name_t _supplemental_header_types[];
 
 /*! Optional header types. */
 extern id_to_name_t _optional_header_types[];

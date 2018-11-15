@@ -399,7 +399,7 @@ static bool validate_keyset(sce_buffer_ctxt_t *ctxt, keyset_t *ks)
 		
 	nc_off = 0;
 	memcpy (ctr_iv, (test_buf2 + 0x20) ,0x10);
-	aes_setkey_enc(&aes_ctxt, test_buf2, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_setkey_enc(&aes_ctxt, test_buf2, ENCRYPTION_ROOT_KEY_BITS);
 	aes_crypt_ctr(&aes_ctxt, 0x10, &nc_off, ctr_iv, sblk, (test_buf2 + 0x40), (test_buf2 + 0x40));
 
 	sig_input_length = _ES64(*(u64*)&test_buf2[0x40]);
@@ -416,7 +416,7 @@ static bool validate_keyset(sce_buffer_ctxt_t *ctxt, keyset_t *ks)
 
 	nc_off = 0;
 	memcpy (ctr_iv, (test_buf2 + 0x20) ,0x10);
-	aes_setkey_enc(&aes_ctxt, test_buf2, ENCRYPTION_ROOT_HEADER_KEYBITS);
+	aes_setkey_enc(&aes_ctxt, test_buf2, ENCRYPTION_ROOT_KEY_BITS);
 	aes_crypt_ctr(&aes_ctxt, 0x10, &nc_off, ctr_iv, sblk, (test_buf2 + 0x40), (test_buf2 + 0x40));
 
 	sig_input_length = _ES64(*(u64*)&test_buf2[0x40]);

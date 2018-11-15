@@ -40,7 +40,7 @@ id_to_name_t _program_types_params[] =
 };
 
 /* Supplemental header types. */
-id_to_name_t _control_info_types[] = 
+id_to_name_t _supplemental_header_types[] = 
 {
 	{SPPL_HEADER_TYPE_SELF_CONTROL_FLAGS, "SELF Control Flags"},
 	{SPPL_HEADER_TYPE_ELF_DIGEST_HEADER, "ELF Digest Header"},
@@ -57,12 +57,12 @@ id_to_name_t _optional_header_types[] =
 	{0, NULL}
 };
 
-/*! NPDRM license types. */
+/*! NP DRM types. */
 id_to_name_t _np_license_types[] = 
 {
-	{NP_LICENSE_NETWORK, "NETWORK"},
-	{NP_LICENSE_LOCAL, "LOCAL"},
-	{NP_LICENSE_FREE, "FREE"},
+	{NP_DRM_TYPE_NETWORK, "NETWORK"},
+	{NP_DRM_TYPE_LOCAL, "LOCAL"},
+	{NP_DRM_TYPE_FREE, "FREE"},
 	{0, NULL}
 };
 
@@ -166,9 +166,9 @@ id_to_name_t _vendor_ids[] =
 /*! ELF machines. */
 id_to_name_t _e_machines[] = 
 {
-	{EM_PPC, "PPC"},
-	{EM_PPC64, "PPC64"},
-	{EM_SPU, "SPU"},
+	{EM_PPC, "PowerPC"},
+	{EM_PPC64, "PowerPC64"},
+	{EM_SPU, "PS3 SPU"},
 	{0, NULL}
 };
 
@@ -176,7 +176,7 @@ id_to_name_t _e_machines[] =
 id_to_name_t _e_types[] = 
 {
 	{ET_EXEC, "EXEC"},
-	{ET_PS3PRX, "PRX"},
+	{ET_SCE_PPURELEXEC, "SCE_PPURELEXEC"},
 	{0, NULL}
 };
 
@@ -215,9 +215,10 @@ id_to_name_t _ph_types[] =
 	{PT_PHDR, "PHDR"},
 	{PT_TLS, "TLS"},
 	{PT_NUM, "NUM"},
-	{PT_PS3_PARAMS, "PARAMS"},
-	{PT_PS3_PRX, "PRX"},
-	{PT_PS3_PRX_RELOC, "PRXRELOC"},
+	{PT_PROC_PARAM, "PARAM"},
+	{PT_PROC_PRX_PARAM, "PRXPARAM"},
+	{PT_SCE_PPURELA, "PPURELA"},
+	{PT_SCE_SEGSYM, "SEGSYM"},
 	{0, NULL}
 };
 

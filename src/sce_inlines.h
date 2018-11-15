@@ -12,7 +12,7 @@
 #include "sce.h"
 
 
-static inline void _es_segment_info(segment_info_t *si)
+static inline void _es_segment_info(segment_ext_header_t *si)
 {
 	si->offset = _ES64(si->offset);
 	si->size = _ES64(si->size);
@@ -22,9 +22,9 @@ static inline void _es_segment_info(segment_info_t *si)
 	si->encrypted = _ES32(si->encrypted);
 }
 
-static inline void _copy_es_segment_info(segment_info_t *dst, segment_info_t *src)
+static inline void _copy_es_segment_info(segment_ext_header_t *dst, segment_ext_header_t *src)
 {
-	memcpy(dst, src, sizeof(segment_info_t)); 
+	memcpy(dst, src, sizeof(segment_ext_header_t)); 
 	_es_segment_info(dst);
 }
 

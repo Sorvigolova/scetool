@@ -85,14 +85,14 @@ static bool _fill_self_config_template(s8 *file, self_config_t *sconf)
 				sconf->app_version = _ES64(ctxt->self.ai->version);
 				_IF_VERBOSE(printf(" APP-Version  0x%016llX\n", sconf->app_version));
 
-				control_info_t *ci = sce_get_ctrl_info(ctxt, SPPL_HEADER_TYPE_ELF_DIGEST_HEADER);
-				ci_data_digest_40_t *cid = (ci_data_digest_40_t *)((u8 *)ci + sizeof(control_info_t));
+				supplemental_header_t *ci = sce_get_supplemental_header(ctxt, SPPL_HEADER_TYPE_ELF_DIGEST_HEADER);
+				ci_data_digest_40_t *cid = (ci_data_digest_40_t *)((u8 *)ci + sizeof(supplemental_header_t));
 				_es_ci_data_digest_40(cid);
 				sconf->fw_version = sce_decver_to_hexver(cid->fw_version);
 				_IF_VERBOSE(printf(" FW Version   0x%016llX\n", sconf->fw_version));
 
-				ci = sce_get_ctrl_info(ctxt, SPPL_HEADER_TYPE_SELF_CONTROL_FLAGS);
-				sconf->ctrl_flags = (u8 *)_memdup(((u8 *)ci) + sizeof(control_info_t), 0x20);
+				ci = sce_get_supplemental_header(ctxt, SPPL_HEADER_TYPE_SELF_CONTROL_FLAGS);
+				sconf->ctrl_flags = (u8 *)_memdup(((u8 *)ci) + sizeof(supplemental_header_t), 0x20);
 				_IF_VERBOSE(_hexdump(stdout, " Control Flags   ", 0, sconf->ctrl_flags, 0x20, 0));
 
 
@@ -251,9 +251,9 @@ static bool _fill_npdrm_config(self_config_t *sconf)
 	}
 	//TODO!
 	if(strcmp(_license_type, "FREE") == 0)
-		sconf->npdrm_config->license_type = NP_LICENSE_FREE;
+		sconf->npdrm_config->license_type = NP_DRM_TYPE_FREE;
 	else if(strcmp(_license_type, "LOCAL") == 0)
-		sconf->npdrm_config->license_type = NP_LICENSE_LOCAL;
+		sconf->npdrm_config->license_type = NP_DRM_TYPE_LOCAL;
 	else
 	{
 		printf("[*] Error: Only supporting LOCAL and FREE license for now.\n");
@@ -374,6 +374,7 @@ void frontend_decrypt(s8 *file_in, s8 *file_out)
 {
 	bool is_header_decrypted = FALSE, is_data_decrypted = FALSE, is_cert_file_unencrypted = FALSE;
 	u8 *buf = _read_buffer(file_in, NULL);
+
 	if(buf != NULL)
 	{
 		sce_buffer_ctxt_t *ctxt = sce_create_ctxt_from_buffer(buf);

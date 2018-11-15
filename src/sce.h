@@ -37,11 +37,9 @@
 /*! SPP file. */
 #define CF_CATEGORY_SPP 4
 
-/*! Sub header types. */
-
-/*!  header types. */
+/*! Section ext header types. */
 /*! SCE version header. */
-#define SUB_HEADER_TYPE_SCEVERSION 1
+#define SECTION_EXT_HEADER_TYPE_SCEVERSION 1
 
 /*! SELF versions. */
 #define SELF_VERSION_2 2
@@ -58,17 +56,17 @@
 /*! Optional header types. */
 /*! Capability flags header. */
 #define OPT_HEADER_TYPE_CAP_FLAGS 1
-/*! Individuals seed header. */
+/*! Individual seed header. */
 #define OPT_HEADER_TYPE_INDIV_SEED 2
 /*! Control flags header 4. */
 #define OPT_HEADER_TYPE_CONTROL_FLAGS 4
 
 /*! Encryption root header key/iv lengths. */
-#define ENCRYPTION_ROOT_HEADER_KEYBITS 128
-#define ENCRYPTION_ROOT_HEADER_KEY_LEN 16
-#define ENCRYPTION_ROOT_HEADER_KEYPAD_LEN 16
-#define ENCRYPTION_ROOT_HEADER_IV_LEN 16
-#define ENCRYPTION_ROOT_HEADER_IVPAD_LEN 16
+#define ENCRYPTION_ROOT_KEY_BITS 128
+#define ENCRYPTION_ROOT_KEY_LEN 16
+#define ENCRYPTION_ROOT_KEY_PAD_LEN 16
+#define ENCRYPTION_ROOT_IV_LEN 16
+#define ENCRYPTION_ROOT_IV_PAD_LEN 16
 
 /*! Metadata section types. */
 /*! Segment header. */
@@ -89,7 +87,7 @@
 /*! Section is encrypted. */
 #define METADATA_SECTION_ENCRYPTED 3
 
-/*! Segment certification header compression algorithms. */
+/*! Segment certification header compress algorithms. */
 /*! Plain-text. */
 #define SEGMENT_COMP_ALGORITHM_PLAIN 1
 /*! Zlib. */
@@ -132,13 +130,13 @@
 /*! NPDRM application. */
 #define PROGRAM_TYPE_NPDRM 8
 
-/*! NPDRM control info magic value ("NPD\0"). */
-#define NP_CI_MAGIC 0x4E504400
+/*! NP DRM header magic value ("NPD\0"). */
+#define NP_HEADER_MAGIC 0x4E504400
 
-/*! NPDRM license types. */
-#define NP_LICENSE_NETWORK 1
-#define NP_LICENSE_LOCAL 2
-#define NP_LICENSE_FREE 3
+/*! NP DRM types. */
+#define NP_DRM_TYPE_NETWORK 1
+#define NP_DRM_TYPE_LOCAL 2
+#define NP_DRM_TYPE_FREE 3
 
 /*! NPDRM application types. */
 #define NP_TYPE_UPDATE 0x20
@@ -195,13 +193,13 @@ typedef struct _signed_elf_header
 typedef struct _encryption_root_header
 {
 	/*! Key. */
-	u8 key[ENCRYPTION_ROOT_HEADER_KEY_LEN];
+	u8 key[ENCRYPTION_ROOT_KEY_LEN];
 	/*! Key padding. */
-	u8 key_pad[ENCRYPTION_ROOT_HEADER_KEYPAD_LEN];
+	u8 key_pad[ENCRYPTION_ROOT_KEY_PAD_LEN];
 	/*! IV. */
-	u8 iv[ENCRYPTION_ROOT_HEADER_IV_LEN];
+	u8 iv[ENCRYPTION_ROOT_IV_LEN];
 	/*! IV padding. */
-	u8 iv_pad[ENCRYPTION_ROOT_HEADER_IVPAD_LEN];
+	u8 iv_pad[ENCRYPTION_ROOT_IV_PAD_LEN];
 } encryption_root_header_t;
 
 typedef struct _certification_header
@@ -220,8 +218,8 @@ typedef struct _certification_header
 	u32 unknown_2;
 } certification_header_t;
 
-/*! Metadata section header. */
-typedef struct _metadata_section_header
+/*! Segment certification header. */
+typedef struct _segment_certification_header
 {
 	/*! Data offset. */
 	u64 data_offset;
@@ -231,7 +229,7 @@ typedef struct _metadata_section_header
 	u32 type;
 	/*! Index. */
 	u32 index;
-	/*! Hashed. */
+	/*! Hash algorithm. */
 	u32 hashed;
 	/*! SHA1 index. */
 	u32 sha1_index;
@@ -241,9 +239,9 @@ typedef struct _metadata_section_header
 	u32 key_index;
 	/*! IV index. */
 	u32 iv_index;
-	/*! Compressed. */
+	/*! Compress algorithm. */
 	u32 compressed;
-} metadata_section_header_t;
+} segment_certification_header_t;
 
 /*! SCE file signature. */
 typedef struct _signature
@@ -254,7 +252,7 @@ typedef struct _signature
 } signature_t;
 
 /*! Segment info. */
-typedef struct _segment_info
+typedef struct _segment_ext_header
 {
 	u64 offset;
 	u64 size;
@@ -262,7 +260,7 @@ typedef struct _segment_info
 	u32 unknown_0;
 	u32 unknown_1;
 	u32 encrypted;
-} segment_info_t;
+} segment_ext_header_t;
 
 /*! SCE version. */
 typedef struct _sce_version
@@ -297,7 +295,7 @@ typedef struct _sce_version_data_30
 #define VENDOR_ID_MASK 0x00FFFFFF
 
 /*! Program info. */
-typedef struct _app_info
+typedef struct _program_identification_header
 {
 	/*! Auth ID. */
 	u64 auth_id;
@@ -309,7 +307,7 @@ typedef struct _app_info
 	u64 version;
 	/*! Padding. */
 	u64 padding;
-} app_info_t;
+} program_identification_header_t;
 
 /*! Vender ID. */
 typedef struct _vendor_id
@@ -330,7 +328,7 @@ typedef struct _control_info
 	u32 size;
 	/*! Next flag (1 if another info follows). */
 	u64 next;
-} control_info_t;
+} supplemental_header_t;
 
 #define CI_FLAG_00_80 0x80
 #define CI_FLAG_00_40 0x40 //root access
@@ -492,13 +490,13 @@ typedef struct _sce_buffer_ctxt
 		{
 			/*! SELF header. */
 			signed_elf_header_t *selfh;
-			/*! Program info. */
-			app_info_t *ai;
-			/*! Section info. */
-			segment_info_t *si;
-			/*! SCE version. */
+			/*! Program identification header. */
+			program_identification_header_t *ai;
+			/*! Segment ext header. */
+			segment_ext_header_t *si;
+			/*! Section ext header. */
 			sce_version_t *sv;
-			/*! Control infos. */
+			/*! Supplemental headers. */
 			list_t *cis;
 			/*! Optional headers. */
 			list_t *ohs;
@@ -506,10 +504,10 @@ typedef struct _sce_buffer_ctxt
 	};
 	/*! Encryption root header. */
 	encryption_root_header_t *erh;
-	/*! Metadata header. */
+	/*! Certification header. */
 	certification_header_t *metah;
-	/*! Metadata section headers. */
-	metadata_section_header_t *metash;
+	/*! Segment certification headers. */
+	segment_certification_header_t *metash;
 	/*! SCE file keys. */
 	u8 *keys;
 	/*! Keys length. */
@@ -547,9 +545,9 @@ typedef struct _sce_buffer_ctxt
 	};
 	/*! Encryption root header offset. */
 	u32 off_erh;
-	/*! Metadata header offset. */
+	/*! Certification header offset. */
 	u32 off_metah;
-	/*! Metadata section headers offset. */
+	/*! Segment certification headers offset. */
 	u32 off_metash;
 	/*! Keys offset. */
 	u32 off_keys;
@@ -626,8 +624,8 @@ u64 sce_hexver_to_decver(u64 version);
 /*! Convert dec version to hex version. */
 u64 sce_decver_to_hexver(u64 version);
 
-/*! Get control info. */
-control_info_t *sce_get_ctrl_info(sce_buffer_ctxt_t *ctxt, u32 type);
+/*! Get supplemental header. */
+supplemental_header_t *sce_get_supplemental_header(sce_buffer_ctxt_t *ctxt, u32 type);
 
 /*! Get optional header. */
 opt_header_t *sce_get_opt_header(sce_buffer_ctxt_t *ctxt, u32 type);

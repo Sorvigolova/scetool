@@ -13,14 +13,10 @@
 /*! PS3 specific ELF constants. */
 /*! LV2 OS ABI. */
 #define ELFOSABI_CELL_LV2 0x66
-/*! PRX ELF type. */
-#define ET_PS3PRX 0xFFA4
 /*! PS3 Params. */
-#define PT_PS3_PARAMS 0x60000001
+#define PT_PROC_PARAM 0x60000001
 /*! PS3 PRX. */
-#define PT_PS3_PRX 0x60000002
-/*! PRX Relocations. */
-#define PT_PS3_PRX_RELOC 0x700000A4
+#define PT_PROC_PRX_PARAM 0x60000002
 
 /*! SELF config. */
 typedef struct _self_config

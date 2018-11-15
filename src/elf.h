@@ -44,189 +44,197 @@ typedef Elf64_Half Elf64_Versym;
 
 typedef struct
 {
-  unsigned char	e_ident[EI_NIDENT];	/* Magic number and other info */
-  Elf32_Half	e_type;			/* Object file type */
-  Elf32_Half	e_machine;		/* Architecture */
-  Elf32_Word	e_version;		/* Object file version */
-  Elf32_Addr	e_entry;		/* Entry point virtual address */
-  Elf32_Off	e_phoff;		/* Program header table file offset */
-  Elf32_Off	e_shoff;		/* Section header table file offset */
-  Elf32_Word	e_flags;		/* Processor-specific flags */
-  Elf32_Half	e_ehsize;		/* ELF header size in bytes */
-  Elf32_Half	e_phentsize;		/* Program header table entry size */
-  Elf32_Half	e_phnum;		/* Program header table entry count */
-  Elf32_Half	e_shentsize;		/* Section header table entry size */
-  Elf32_Half	e_shnum;		/* Section header table entry count */
-  Elf32_Half	e_shstrndx;		/* Section header string table index */
+  unsigned char	e_ident[EI_NIDENT]; /* Magic number and other info */
+  Elf32_Half    e_type;             /* Object file type */
+  Elf32_Half    e_machine;          /* Architecture */
+  Elf32_Word    e_version;          /* Object file version */
+  Elf32_Addr    e_entry;            /* Entry point virtual address */
+  Elf32_Off     e_phoff;            /* Program header table file offset */
+  Elf32_Off     e_shoff;            /* Section header table file offset */
+  Elf32_Word    e_flags;            /* Processor-specific flags */
+  Elf32_Half    e_ehsize;           /* ELF header size in bytes */
+  Elf32_Half    e_phentsize;        /* Program header table entry size */
+  Elf32_Half    e_phnum;            /* Program header table entry count */
+  Elf32_Half    e_shentsize;        /* Section header table entry size */
+  Elf32_Half    e_shnum;            /* Section header table entry count */
+  Elf32_Half    e_shstrndx;         /* Section header string table index */
 } Elf32_Ehdr;
 
 typedef struct
 {
-  unsigned char	e_ident[EI_NIDENT];	/* Magic number and other info */
-  Elf64_Half	e_type;			/* Object file type */
-  Elf64_Half	e_machine;		/* Architecture */
-  Elf64_Word	e_version;		/* Object file version */
-  Elf64_Addr	e_entry;		/* Entry point virtual address */
-  Elf64_Off	e_phoff;		/* Program header table file offset */
-  Elf64_Off	e_shoff;		/* Section header table file offset */
-  Elf64_Word	e_flags;		/* Processor-specific flags */
-  Elf64_Half	e_ehsize;		/* ELF header size in bytes */
-  Elf64_Half	e_phentsize;		/* Program header table entry size */
-  Elf64_Half	e_phnum;		/* Program header table entry count */
-  Elf64_Half	e_shentsize;		/* Section header table entry size */
-  Elf64_Half	e_shnum;		/* Section header table entry count */
-  Elf64_Half	e_shstrndx;		/* Section header string table index */
+  unsigned char	e_ident[EI_NIDENT]; /* Magic number and other info */
+  Elf64_Half    e_type;             /* Object file type */
+  Elf64_Half    e_machine;          /* Architecture */
+  Elf64_Word    e_version;          /* Object file version */
+  Elf64_Addr    e_entry;            /* Entry point virtual address */
+  Elf64_Off     e_phoff;            /* Program header table file offset */
+  Elf64_Off     e_shoff;            /* Section header table file offset */
+  Elf64_Word    e_flags;            /* Processor-specific flags */
+  Elf64_Half    e_ehsize;           /* ELF header size in bytes */
+  Elf64_Half    e_phentsize;        /* Program header table entry size */
+  Elf64_Half    e_phnum;            /* Program header table entry count */
+  Elf64_Half    e_shentsize;        /* Section header table entry size */
+  Elf64_Half    e_shnum;            /* Section header table entry count */
+  Elf64_Half    e_shstrndx;         /* Section header string table index */
 } Elf64_Ehdr;
 
 /* Fields in the e_ident array.  The EI_* macros are indices into the
    array.  The macros under each EI_* macro are the values the byte
    may have.  */
 
-#define EI_MAG0		0		/* File identification byte 0 index */
-#define ELFMAG0		0x7f		/* Magic number byte 0 */
+#define EI_MAG0     0       /* File identification byte 0 index */
+#define ELFMAG0     0x7f    /* Magic number byte 0 */
 
-#define EI_MAG1		1		/* File identification byte 1 index */
-#define ELFMAG1		'E'		/* Magic number byte 1 */
+#define EI_MAG1     1       /* File identification byte 1 index */
+#define ELFMAG1     'E'     /* Magic number byte 1 */
 
-#define EI_MAG2		2		/* File identification byte 2 index */
-#define ELFMAG2		'L'		/* Magic number byte 2 */
+#define EI_MAG2     2       /* File identification byte 2 index */
+#define ELFMAG2     'L'     /* Magic number byte 2 */
 
-#define EI_MAG3		3		/* File identification byte 3 index */
-#define ELFMAG3		'F'		/* Magic number byte 3 */
+#define EI_MAG3     3       /* File identification byte 3 index */
+#define ELFMAG3     'F'     /* Magic number byte 3 */
 
 /* Conglomeration of the identification bytes, for easy testing as a word.  */
-#define	ELFMAG		"\177ELF"
-#define	SELFMAG		4
+#define	ELFMAG      "\177ELF"
+#define	SELFMAG     4
 
-#define EI_CLASS	4		/* File class byte index */
-#define ELFCLASSNONE	0		/* Invalid class */
-#define ELFCLASS32	1		/* 32-bit objects */
-#define ELFCLASS64	2		/* 64-bit objects */
-#define ELFCLASSNUM	3
+#define EI_CLASS     4      /* File class byte index */
+#define ELFCLASSNONE 0      /* Invalid class */
+#define ELFCLASS32   1      /* 32-bit objects */
+#define ELFCLASS64   2      /* 64-bit objects */
+#define ELFCLASSNUM  3
 
-#define EI_DATA		5		/* Data encoding byte index */
-#define ELFDATANONE	0		/* Invalid data encoding */
-#define ELFDATA2LSB	1		/* 2's complement, little endian */
-#define ELFDATA2MSB	2		/* 2's complement, big endian */
-#define ELFDATANUM	3
+#define EI_DATA     5       /* Data encoding byte index */
+#define ELFDATANONE 0       /* Invalid data encoding */
+#define ELFDATA2LSB 1       /* 2's complement, little endian */
+#define ELFDATA2MSB 2       /* 2's complement, big endian */
+#define ELFDATANUM  3
 
-#define EI_VERSION	6		/* File version byte index */
+#define EI_VERSION  6       /* File version byte index */
 					/* Value must be EV_CURRENT */
 
-#define EI_OSABI	7		/* OS ABI identification */
-#define ELFOSABI_NONE		0	/* UNIX System V ABI */
-#define ELFOSABI_SYSV		0	/* Alias.  */
-#define ELFOSABI_HPUX		1	/* HP-UX */
-#define ELFOSABI_NETBSD		2	/* NetBSD.  */
-#define ELFOSABI_LINUX		3	/* Linux.  */
-#define ELFOSABI_SOLARIS	6	/* Sun Solaris.  */
-#define ELFOSABI_AIX		7	/* IBM AIX.  */
-#define ELFOSABI_IRIX		8	/* SGI Irix.  */
-#define ELFOSABI_FREEBSD	9	/* FreeBSD.  */
-#define ELFOSABI_TRU64		10	/* Compaq TRU64 UNIX.  */
-#define ELFOSABI_MODESTO	11	/* Novell Modesto.  */
-#define ELFOSABI_OPENBSD	12	/* OpenBSD.  */
-#define ELFOSABI_ARM		97	/* ARM */
-#define ELFOSABI_STANDALONE	255	/* Standalone (embedded) application */
+#define EI_OSABI            7   /* OS ABI identification */
+#define ELFOSABI_NONE       0   /* UNIX System V ABI */
+#define ELFOSABI_SYSV       0   /* Alias.  */
+#define ELFOSABI_HPUX       1   /* HP-UX */
+#define ELFOSABI_NETBSD     2   /* NetBSD.  */
+#define ELFOSABI_LINUX      3   /* Linux.  */
+#define ELFOSABI_SOLARIS    6   /* Sun Solaris.  */
+#define ELFOSABI_AIX        7   /* IBM AIX.  */
+#define ELFOSABI_IRIX       8   /* SGI Irix.  */
+#define ELFOSABI_FREEBSD    9   /* FreeBSD.  */
+#define ELFOSABI_TRU64      10  /* Compaq TRU64 UNIX.  */
+#define ELFOSABI_MODESTO    11  /* Novell Modesto.  */
+#define ELFOSABI_OPENBSD    12  /* OpenBSD.  */
+#define ELFOSABI_ARM        97  /* ARM */
+#define ELFOSABI_STANDALONE 255 /* Standalone (embedded) application */
 
-#define EI_ABIVERSION	8		/* ABI version */
+#define EI_ABIVERSION       8   /* ABI version */
 
-#define EI_PAD		9		/* Byte index of padding bytes */
+#define EI_PAD              9   /* Byte index of padding bytes */
 
 /* Legal values for e_type (object file type).  */
 
-#define ET_NONE		0		/* No file type */
-#define ET_REL		1		/* Relocatable file */
-#define ET_EXEC		2		/* Executable file */
-#define ET_DYN		3		/* Shared object file */
-#define ET_CORE		4		/* Core file */
-#define	ET_NUM		5		/* Number of defined types */
-#define ET_LOOS		0xfe00		/* OS-specific range start */
-#define ET_HIOS		0xfeff		/* OS-specific range end */
-#define ET_LOPROC	0xff00		/* Processor-specific range start */
-#define ET_HIPROC	0xffff		/* Processor-specific range end */
+#define ET_NONE            0      /* No file type */
+#define ET_REL             1      /* Relocatable file */
+#define ET_EXEC            2      /* Executable file */
+#define ET_DYN             3      /* Shared object file */
+#define ET_CORE            4      /* Core file */
+#define	ET_NUM             5      /* Number of defined types */
+#define ET_LOOS            0xfe00 /* OS-specific range start */
+#define ET_HIOS            0xfeff /* OS-specific range end */
+#define ET_LOPROC          0xff00 /* Processor-specific range start */
+#define ET_SCE_IOPRELEXEC  0xff80
+#define ET_SCE_IOPRELEXEC2 0xff81
+#define ET_SCE_EERELEXEC   0xff90
+#define ET_SCE_EERELEXEC2  0xff91
+#define ET_SCE_PSPRELEXEC  0xffa0
+#define ET_SCE_PPURELEXEC  0xffa4
+#define ET_SCE_PSPOVERLAY  0xffa8
+#define ET_HIPROC          0xffff /* Processor-specific range end */
 
 /* Legal values for e_machine (architecture).  */
 
-#define EM_NONE		 0		/* No machine */
-#define EM_M32		 1		/* AT&T WE 32100 */
-#define EM_SPARC	 2		/* SUN SPARC */
-#define EM_386		 3		/* Intel 80386 */
-#define EM_68K		 4		/* Motorola m68k family */
-#define EM_88K		 5		/* Motorola m88k family */
-#define EM_486       6		/* Intel 80486 */
-#define EM_860		 7		/* Intel 80860 */
-#define EM_MIPS		 8		/* MIPS R3000 big-endian */
-#define EM_S370		 9		/* IBM System/370 */
-#define EM_MIPS_RS3_LE	10		/* MIPS R3000 little-endian */
+#define EM_NONE        0    /* No machine */
+#define EM_M32         1    /* AT&T WE 32100 */
+#define EM_SPARC       2    /* SUN SPARC */
+#define EM_386         3    /* Intel 80386 */
+#define EM_68K         4    /* Motorola m68k family */
+#define EM_88K         5    /* Motorola m88k family */
+#define EM_486         6    /* Intel 80486 */
+#define EM_860         7    /* Intel 80860 */
+#define EM_MIPS        8    /* MIPS R3000 big-endian */
+#define EM_S370        9    /* IBM System/370 */
+#define EM_MIPS_RS4_BE 10
+#define EM_MIPS_RS3_LE 10   /* MIPS R3000 little-endian */
 
-#define EM_PARISC	15		/* HPPA */
-#define EM_VPP500	17		/* Fujitsu VPP500 */
-#define EM_SPARC32PLUS	18		/* Sun's "v8plus" */
-#define EM_960		19		/* Intel 80960 */
-#define EM_PPC		20		/* PowerPC */
-#define EM_PPC64	21		/* PowerPC 64-bit */
-#define EM_S390		22		/* IBM S390 */
-#define EM_SPU      23      /* Cell BE SPU. */
-#define EM_V800		36		/* NEC V800 series */
-#define EM_FR20		37		/* Fujitsu FR20 */
-#define EM_RH32		38		/* TRW RH-32 */
-#define EM_RCE		39		/* Motorola RCE */
-#define EM_ARM		40		/* ARM */
-#define EM_FAKE_ALPHA	41		/* Digital Alpha */
-#define EM_SH		42		/* Hitachi SH */
-#define EM_SPARCV9	43		/* SPARC v9 64-bit */
-#define EM_TRICORE	44		/* Siemens Tricore */
-#define EM_ARC		45		/* Argonaut RISC Core */
-#define EM_H8_300	46		/* Hitachi H8/300 */
-#define EM_H8_300H	47		/* Hitachi H8/300H */
-#define EM_H8S		48		/* Hitachi H8S */
-#define EM_H8_500	49		/* Hitachi H8/500 */
-#define EM_IA_64	50		/* Intel Merced */
-#define EM_MIPS_X	51		/* Stanford MIPS-X */
-#define EM_COLDFIRE	52		/* Motorola Coldfire */
-#define EM_68HC12	53		/* Motorola M68HC12 */
-#define EM_MMA		54		/* Fujitsu MMA Multimedia Accelerator*/
-#define EM_PCP		55		/* Siemens PCP */
-#define EM_NCPU		56		/* Sony nCPU embeeded RISC */
-#define EM_NDR1		57		/* Denso NDR1 microprocessor */
-#define EM_STARCORE	58		/* Motorola Start*Core processor */
-#define EM_ME16		59		/* Toyota ME16 processor */
-#define EM_ST100	60		/* STMicroelectronic ST100 processor */
-#define EM_TINYJ	61		/* Advanced Logic Corp. Tinyj emb.fam*/
-#define EM_X86_64	62		/* AMD x86-64 architecture */
-#define EM_PDSP		63		/* Sony DSP Processor */
+#define EM_PARISC      15   /* HPPA */
+#define EM_VPP500      17   /* Fujitsu VPP500 */
+#define EM_SPARC32PLUS 18   /* Sun's "v8plus" */
+#define EM_960         19   /* Intel 80960 */
+#define EM_PPC         20   /* PowerPC */
+#define EM_PPC64       21   /* PowerPC 64-bit */
+#define EM_S390        22   /* IBM S390 */
+#define EM_SPU         23   /* Cell BE SPU. */
+#define EM_V800        36   /* NEC V800 series */
+#define EM_FR20        37   /* Fujitsu FR20 */
+#define EM_RH32        38   /* TRW RH-32 */
+#define EM_RCE         39   /* Motorola RCE */
+#define EM_ARM         40   /* ARM */
+#define EM_FAKE_ALPHA  41   /* Digital Alpha */
+#define EM_SH          42   /* Hitachi SH */
+#define EM_SPARCV9     43   /* SPARC v9 64-bit */
+#define EM_TRICORE     44   /* Siemens Tricore */
+#define EM_ARC         45   /* Argonaut RISC Core */
+#define EM_H8_300      46   /* Hitachi H8/300 */
+#define EM_H8_300H     47   /* Hitachi H8/300H */
+#define EM_H8S         48   /* Hitachi H8S */
+#define EM_H8_500      49   /* Hitachi H8/500 */
+#define EM_IA_64       50   /* Intel Merced */
+#define EM_MIPS_X      51   /* Stanford MIPS-X */
+#define EM_COLDFIRE    52   /* Motorola Coldfire */
+#define EM_68HC12      53   /* Motorola M68HC12 */
+#define EM_MMA         54   /* Fujitsu MMA Multimedia Accelerator*/
+#define EM_PCP         55   /* Siemens PCP */
+#define EM_NCPU        56   /* Sony nCPU embeeded RISC */
+#define EM_NDR1        57   /* Denso NDR1 microprocessor */
+#define EM_STARCORE    58   /* Motorola Start*Core processor */
+#define EM_ME16        59   /* Toyota ME16 processor */
+#define EM_ST100       60   /* STMicroelectronic ST100 processor */
+#define EM_TINYJ       61   /* Advanced Logic Corp. Tinyj emb.fam*/
+#define EM_X86_64      62   /* AMD x86-64 architecture */
+#define EM_PDSP        63   /* Sony DSP Processor */
 
-#define EM_FX66		66		/* Siemens FX66 microcontroller */
-#define EM_ST9PLUS	67		/* STMicroelectronics ST9+ 8/16 mc */
-#define EM_ST7		68		/* STmicroelectronics ST7 8 bit mc */
-#define EM_68HC16	69		/* Motorola MC68HC16 microcontroller */
-#define EM_68HC11	70		/* Motorola MC68HC11 microcontroller */
-#define EM_68HC08	71		/* Motorola MC68HC08 microcontroller */
-#define EM_68HC05	72		/* Motorola MC68HC05 microcontroller */
-#define EM_SVX		73		/* Silicon Graphics SVx */
-#define EM_ST19		74		/* STMicroelectronics ST19 8 bit mc */
-#define EM_VAX		75		/* Digital VAX */
-#define EM_CRIS		76		/* Axis Communications 32-bit embedded processor */
-#define EM_JAVELIN	77		/* Infineon Technologies 32-bit embedded processor */
-#define EM_FIREPATH	78		/* Element 14 64-bit DSP Processor */
-#define EM_ZSP		79		/* LSI Logic 16-bit DSP Processor */
-#define EM_MMIX		80		/* Donald Knuth's educational 64-bit processor */
-#define EM_HUANY	81		/* Harvard University machine-independent object files */
-#define EM_PRISM	82		/* SiTera Prism */
-#define EM_AVR		83		/* Atmel AVR 8-bit microcontroller */
-#define EM_FR30		84		/* Fujitsu FR30 */
-#define EM_D10V		85		/* Mitsubishi D10V */
-#define EM_D30V		86		/* Mitsubishi D30V */
-#define EM_V850		87		/* NEC v850 */
-#define EM_M32R		88		/* Mitsubishi M32R */
-#define EM_MN10300	89		/* Matsushita MN10300 */
-#define EM_MN10200	90		/* Matsushita MN10200 */
-#define EM_PJ		91		/* picoJava */
-#define EM_OPENRISC	92		/* OpenRISC 32-bit embedded processor */
-#define EM_ARC_A5	93		/* ARC Cores Tangent-A5 */
-#define EM_XTENSA	94		/* Tensilica Xtensa Architecture */
-#define EM_NUM		95
+#define EM_FX66        66   /* Siemens FX66 microcontroller */
+#define EM_ST9PLUS     67   /* STMicroelectronics ST9+ 8/16 mc */
+#define EM_ST7         68   /* STmicroelectronics ST7 8 bit mc */
+#define EM_68HC16      69   /* Motorola MC68HC16 microcontroller */
+#define EM_68HC11      70   /* Motorola MC68HC11 microcontroller */
+#define EM_68HC08      71   /* Motorola MC68HC08 microcontroller */
+#define EM_68HC05      72   /* Motorola MC68HC05 microcontroller */
+#define EM_SVX         73   /* Silicon Graphics SVx */
+#define EM_ST19        74   /* STMicroelectronics ST19 8 bit mc */
+#define EM_VAX         75   /* Digital VAX */
+#define EM_CRIS        76   /* Axis Communications 32-bit embedded processor */
+#define EM_JAVELIN     77   /* Infineon Technologies 32-bit embedded processor */
+#define EM_FIREPATH    78   /* Element 14 64-bit DSP Processor */
+#define EM_ZSP         79   /* LSI Logic 16-bit DSP Processor */
+#define EM_MMIX        80   /* Donald Knuth's educational 64-bit processor */
+#define EM_HUANY       81   /* Harvard University machine-independent object files */
+#define EM_PRISM       82   /* SiTera Prism */
+#define EM_AVR         83   /* Atmel AVR 8-bit microcontroller */
+#define EM_FR30        84   /* Fujitsu FR30 */
+#define EM_D10V        85   /* Mitsubishi D10V */
+#define EM_D30V        86   /* Mitsubishi D30V */
+#define EM_V850        87   /* NEC v850 */
+#define EM_M32R        88   /* Mitsubishi M32R */
+#define EM_MN10300     89   /* Matsushita MN10300 */
+#define EM_MN10200     90   /* Matsushita MN10200 */
+#define EM_PJ          91   /* picoJava */
+#define EM_OPENRISC    92   /* OpenRISC 32-bit embedded processor */
+#define EM_ARC_A5      93   /* ARC Cores Tangent-A5 */
+#define EM_XTENSA      94   /* Tensilica Xtensa Architecture */
+#define EM_NUM         95
 
 /* If it is necessary to assign new unofficial EM_* values, please
    pick large random numbers (0x8523, 0xa7f2, etc.) to minimize the
@@ -525,25 +533,25 @@ typedef struct
 
 /* Legal values for p_type (segment type).  */
 
-#define	PT_NULL		0		/* Program header table entry unused */
-#define PT_LOAD		1		/* Loadable program segment */
-#define PT_DYNAMIC	2		/* Dynamic linking information */
-#define PT_INTERP	3		/* Program interpreter */
-#define PT_NOTE		4		/* Auxiliary information */
-#define PT_SHLIB	5		/* Reserved */
-#define PT_PHDR		6		/* Entry for header table itself */
-#define PT_TLS		7		/* Thread-local storage segment */
-#define	PT_NUM		8		/* Number of defined types */
-#define PT_LOOS		0x60000000	/* Start of OS-specific */
-#define PT_GNU_EH_FRAME	0x6474e550	/* GCC .eh_frame_hdr segment */
-#define PT_GNU_STACK	0x6474e551	/* Indicates stack executability */
-#define PT_LOSUNW	0x6ffffffa
-#define PT_SUNWBSS	0x6ffffffa	/* Sun Specific segment */
-#define PT_SUNWSTACK	0x6ffffffb	/* Stack segment */
-#define PT_HISUNW	0x6fffffff
-#define PT_HIOS		0x6fffffff	/* End of OS-specific */
-#define PT_LOPROC	0x70000000	/* Start of processor-specific */
-#define PT_HIPROC	0x7fffffff	/* End of processor-specific */
+#define	PT_NULL         0          /* Program header table entry unused */
+#define PT_LOAD         1          /* Loadable program segment */
+#define PT_DYNAMIC      2          /* Dynamic linking information */
+#define PT_INTERP       3          /* Program interpreter */
+#define PT_NOTE         4          /* Auxiliary information */
+#define PT_SHLIB        5          /* Reserved */
+#define PT_PHDR         6          /* Entry for header table itself */
+#define PT_TLS          7          /* Thread-local storage segment */
+#define	PT_NUM          8          /* Number of defined types */
+#define PT_LOOS         0x60000000 /* Start of OS-specific */
+#define PT_GNU_EH_FRAME 0x6474e550 /* GCC .eh_frame_hdr segment */
+#define PT_GNU_STACK    0x6474e551 /* Indicates stack executability */
+#define PT_LOSUNW       0x6ffffffa
+#define PT_SUNWBSS      0x6ffffffa /* Sun Specific segment */
+#define PT_SUNWSTACK    0x6ffffffb /* Stack segment */
+#define PT_HISUNW       0x6fffffff
+#define PT_HIOS         0x6fffffff /* End of OS-specific */
+#define PT_LOPROC       0x70000000 /* Start of processor-specific */
+#define PT_HIPROC       0x7fffffff /* End of processor-specific */
 
 /* Legal values for p_flags (segment flags).  */
 
@@ -1235,23 +1243,23 @@ typedef struct
 
 /* Legal values for MIPS architecture level.  */
 
-#define EF_MIPS_ARCH_1	    0x00000000	/* -mips1 code.  */
-#define EF_MIPS_ARCH_2	    0x10000000	/* -mips2 code.  */
-#define EF_MIPS_ARCH_3	    0x20000000	/* -mips3 code.  */
-#define EF_MIPS_ARCH_4	    0x30000000	/* -mips4 code.  */
-#define EF_MIPS_ARCH_5	    0x40000000	/* -mips5 code.  */
-#define EF_MIPS_ARCH_32	    0x60000000	/* MIPS32 code.  */
-#define EF_MIPS_ARCH_64	    0x70000000	/* MIPS64 code.  */
+#define EF_MIPS_ARCH_1      0x00000000	/* -mips1 code.  */
+#define EF_MIPS_ARCH_2      0x10000000	/* -mips2 code.  */
+#define EF_MIPS_ARCH_3      0x20000000	/* -mips3 code.  */
+#define EF_MIPS_ARCH_4      0x30000000	/* -mips4 code.  */
+#define EF_MIPS_ARCH_5      0x40000000	/* -mips5 code.  */
+#define EF_MIPS_ARCH_32     0x60000000	/* MIPS32 code.  */
+#define EF_MIPS_ARCH_64     0x70000000	/* MIPS64 code.  */
 
 /* The following are non-official names and should not be used.  */
 
-#define E_MIPS_ARCH_1	  0x00000000	/* -mips1 code.  */
-#define E_MIPS_ARCH_2	  0x10000000	/* -mips2 code.  */
-#define E_MIPS_ARCH_3	  0x20000000	/* -mips3 code.  */
-#define E_MIPS_ARCH_4	  0x30000000	/* -mips4 code.  */
-#define E_MIPS_ARCH_5	  0x40000000	/* -mips5 code.  */
-#define E_MIPS_ARCH_32	  0x60000000	/* MIPS32 code.  */
-#define E_MIPS_ARCH_64	  0x70000000	/* MIPS64 code.  */
+#define E_MIPS_ARCH_1	    0x00000000	/* -mips1 code.  */
+#define E_MIPS_ARCH_2	    0x10000000	/* -mips2 code.  */
+#define E_MIPS_ARCH_3	    0x20000000	/* -mips3 code.  */
+#define E_MIPS_ARCH_4	    0x30000000	/* -mips4 code.  */
+#define E_MIPS_ARCH_5	    0x40000000	/* -mips5 code.  */
+#define E_MIPS_ARCH_32	    0x60000000	/* MIPS32 code.  */
+#define E_MIPS_ARCH_64	    0x70000000	/* MIPS64 code.  */
 
 /* Special section indices.  */
 
@@ -1715,36 +1723,42 @@ typedef Elf32_Addr Elf32_Conflict;
 
 /* Legal values for p_type field of Elf32_Phdr/Elf64_Phdr.  */
 
-#define PT_HP_TLS		(PT_LOOS + 0x0)
-#define PT_HP_CORE_NONE		(PT_LOOS + 0x1)
-#define PT_HP_CORE_VERSION	(PT_LOOS + 0x2)
-#define PT_HP_CORE_KERNEL	(PT_LOOS + 0x3)
-#define PT_HP_CORE_COMM		(PT_LOOS + 0x4)
-#define PT_HP_CORE_PROC		(PT_LOOS + 0x5)
-#define PT_HP_CORE_LOADABLE	(PT_LOOS + 0x6)
-#define PT_HP_CORE_STACK	(PT_LOOS + 0x7)
-#define PT_HP_CORE_SHM		(PT_LOOS + 0x8)
-#define PT_HP_CORE_MMF		(PT_LOOS + 0x9)
-#define PT_HP_PARALLEL		(PT_LOOS + 0x10)
-#define PT_HP_FASTBIND		(PT_LOOS + 0x11)
-#define PT_HP_OPT_ANNOT		(PT_LOOS + 0x12)
-#define PT_HP_HSL_ANNOT		(PT_LOOS + 0x13)
-#define PT_HP_STACK		(PT_LOOS + 0x14)
+#define PT_HP_TLS           (PT_LOOS + 0x0)
+#define PT_HP_CORE_NONE     (PT_LOOS + 0x1)
+#define PT_HP_CORE_VERSION  (PT_LOOS + 0x2)
+#define PT_HP_CORE_KERNEL   (PT_LOOS + 0x3)
+#define PT_HP_CORE_COMM     (PT_LOOS + 0x4)
+#define PT_HP_CORE_PROC     (PT_LOOS + 0x5)
+#define PT_HP_CORE_LOADABLE (PT_LOOS + 0x6)
+#define PT_HP_CORE_STACK    (PT_LOOS + 0x7)
+#define PT_HP_CORE_SHM      (PT_LOOS + 0x8)
+#define PT_HP_CORE_MMF      (PT_LOOS + 0x9)
+#define PT_HP_PARALLEL      (PT_LOOS + 0x10)
+#define PT_HP_FASTBIND      (PT_LOOS + 0x11)
+#define PT_HP_OPT_ANNOT     (PT_LOOS + 0x12)
+#define PT_HP_HSL_ANNOT     (PT_LOOS + 0x13)
+#define PT_HP_STACK         (PT_LOOS + 0x14)
 
 #define PT_PARISC_ARCHEXT	0x70000000
 #define PT_PARISC_UNWIND	0x70000001
 
+#define PT_SCE_IOPMOD       0x70000080
+#define PT_SCE_EEMOD        0x70000090
+#define PT_SCE_PSPREL       0x700000a0
+#define PT_SCE_PPURELA      0x700000a4
+#define PT_SCE_SEGSYM       0x700000a8
+
 /* Legal values for p_flags field of Elf32_Phdr/Elf64_Phdr.  */
 
-#define PF_PARISC_SBP		0x08000000
+#define PF_PARISC_SBP       0x08000000
 
-#define PF_HP_PAGE_SIZE		0x00100000
-#define PF_HP_FAR_SHARED	0x00200000
-#define PF_HP_NEAR_SHARED	0x00400000
-#define PF_HP_CODE		0x01000000
-#define PF_HP_MODIFY		0x02000000
-#define PF_HP_LAZYSWAP		0x04000000
-#define PF_HP_SBP		0x08000000
+#define PF_HP_PAGE_SIZE     0x00100000
+#define PF_HP_FAR_SHARED    0x00200000
+#define PF_HP_NEAR_SHARED   0x00400000
+#define PF_HP_CODE          0x01000000
+#define PF_HP_MODIFY        0x02000000
+#define PF_HP_LAZYSWAP      0x04000000
+#define PF_HP_SBP           0x08000000
 
 
 /* Alpha specific definitions.  */
