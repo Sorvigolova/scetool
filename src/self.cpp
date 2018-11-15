@@ -127,6 +127,10 @@ u64 _get_compressed_self_diff(sce_buffer_ctxt_t *ctxt)
 
 			for(i = 0; i < _ES32(certh->section_count); i++)
 			{
+				//PT_PROC_PRX_PARAM can not be compressed, cause it is a part of some another loadable segment.
+				if((_ES32(segch[i].type) == METADATA_SECTION_TYPE_PHDR) && _ES32(ph[(_ES32(segch[i].index))].p_type) == PT_PROC_PRX_PARAM && (_ES32(segch[i].compressed) == SEGMENT_COMP_ALGORITHM_ZLIB))
+					return -1;
+				
 				//Handling LOADable program segments only.
 				if((_ES32(segch[i].type) == METADATA_SECTION_TYPE_PHDR) && _ES32(ph[(_ES32(segch[i].index))].p_type) == PT_LOAD)
 				{
@@ -187,6 +191,10 @@ u64 _get_compressed_self_diff(sce_buffer_ctxt_t *ctxt)
 
 			for(i = 0; i < _ES32(certh->section_count); i++)
 			{
+				//PT_PROC_PRX_PARAM can not be compressed, cause it is a part of some another loadable segment.
+				if((_ES32(segch[i].type) == METADATA_SECTION_TYPE_PHDR) && (_ES32(ph[(_ES32(segch[i].index))].p_type) == PT_PROC_PRX_PARAM) &&  (_ES32(segch[i].compressed) == SEGMENT_COMP_ALGORITHM_ZLIB))
+					return -1;
+				
 				//Handling LOADable program segments only.
 				if((_ES32(segch[i].type) == METADATA_SECTION_TYPE_PHDR) && _ES32(ph[(_ES32(segch[i].index))].p_type) == PT_LOAD)
 				{
